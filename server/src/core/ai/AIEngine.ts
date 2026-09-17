@@ -422,7 +422,7 @@ Comment "LINK" or "INFO" below and I'll send the full guide directly to your DMs
         return p;
       }
     }
-    return 'chrome';
+    return 'google-chrome';
   }
 
   /**

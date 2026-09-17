@@ -1,10 +1,14 @@
 import fs from 'fs';
 import path from 'path';
 import { spawn } from 'child_process';
-import puppeteer, { Browser, Page } from 'puppeteer-core';
+import puppeteer from 'puppeteer-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import { Browser, Page } from 'puppeteer-core';
 import { config } from '../../config';
 import { db } from '../../storage/DatabaseAdapter';
 import { IAuthResult } from './InstagramTypes';
+
+puppeteer.use(StealthPlugin());
 
 export class InstagramWebEngine {
   private static instance: InstagramWebEngine;
@@ -112,7 +116,7 @@ export class InstagramWebEngine {
     const executable = this.detectBrowserExecutable();
     const profileDir = this.getSessionProfileDir(sessionId);
 
-    browser = await puppeteer.launch({
+    browser = (await puppeteer.launch({
       executablePath: executable,
       userDataDir: profileDir,
       headless: headless ? ('new' as any) : false,
@@ -125,7 +129,11 @@ export class InstagramWebEngine {
         '--window-size=1280,800',
         '--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36'
       ]
-    });
+    })) as unknown as Browser;
+
+    if (!browser) {
+      throw new Error('Failed to launch browser instance');
+    }
 
     const pages = await browser.pages();
     page = pages.length > 0 ? pages[0] : await browser.newPage();
@@ -353,7 +361,7 @@ export class InstagramWebEngine {
       const clickBtn = async (text: string, maxTries = 4) => {
         console.log(`[InstagramWebEngine] Clicking button: "${text}"...`);
         for (let i = 0; i < maxTries; i++) {
-          const clicked = await page.evaluate((t) => {
+          const clicked = await page.evaluate((t: any) => {
             const btns = Array.from(document.querySelectorAll('button, div[role="button"], span, div, a')) as HTMLElement[];
             for (const b of btns) {
               const inner = (b.innerText || '').trim().toLowerCase();
@@ -387,7 +395,7 @@ export class InstagramWebEngine {
       const captionBox = await page.$('div[aria-label="Write a caption..."], div[role="textbox"]');
       if (captionBox && caption) {
         await captionBox.click();
-        await page.evaluate((c) => {
+        await page.evaluate((c: any) => {
           const box = document.querySelector('div[aria-label="Write a caption..."], div[role="textbox"]') as HTMLElement;
           if (box) {
             box.focus();
