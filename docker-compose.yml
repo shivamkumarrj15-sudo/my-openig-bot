@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  openig:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: openig-gateway
+    restart: unless-stopped
+    ports:
+      - "2895:2895"
+    environment:
+      - PORT=2895
+      - HOST=0.0.0.0
+      - NODE_ENV=production
+      - MASTER_API_KEY=openig_master_sec_2026_dev_key
+      - ENABLE_SWAGGER=true
+      - ENABLE_MOCK_DRIVER=true
+    volumes:
+      - openig_data:/app/server/data
+
+volumes:
+  openig_data:
+    driver: local

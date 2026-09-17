@@ -1,0 +1,25 @@
+{
+  "name": "openig",
+  "version": "1.0.0",
+  "description": "OpenIG - Open Instagram API Gateway & Marketing Automation Platform (OpenWA for Instagram)",
+  "scripts": {
+    "dev:server": "cd server && npm run dev",
+    "dev:dashboard": "cd dashboard && npm run dev",
+    "build:server": "cd server && npm run build",
+    "build:dashboard": "cd dashboard && npm run build",
+    "build": "npm run build:dashboard && npm run build:server",
+    "start": "cd server && npm run start"
+  },
+  "keywords": [
+    "instagram",
+    "instagram-api",
+    "api-gateway",
+    "openwa",
+    "direct-messages",
+    "automation",
+    "comment-to-dm",
+    "openig"
+  ],
+  "author": "OpenIG Community",
+  "license": "MIT"
+}
