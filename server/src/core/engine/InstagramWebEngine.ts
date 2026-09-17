@@ -193,10 +193,12 @@ export class InstagramWebEngine {
     const cookies = session?.cookies;
 
     try {
+      console.log(`[InstagramWebEngine] Launching browser for session ${sessionId}...`);
       const { page } = await this.getOrCreateBrowser(sessionId, true);
 
       if (cookies && cookies.sessionid) {
-        await page.setCookie(
+        console.log(`[InstagramWebEngine] Injecting Instagram cookies...`);
+        const cookieList: any[] = [
           {
             name: 'sessionid',
             value: cookies.sessionid,
@@ -211,28 +213,76 @@ export class InstagramWebEngine {
             domain: '.instagram.com',
             path: '/',
             secure: true
+          },
+          {
+            name: 'ig_did',
+            value: '4B425442-1234-4ABC-8DEF-1234567890AB',
+            domain: '.instagram.com',
+            path: '/',
+            secure: true
+          },
+          {
+            name: 'ig_nrcb',
+            value: '1',
+            domain: '.instagram.com',
+            path: '/',
+            secure: true
           }
-        );
+        ];
+        if (cookies.csrftoken) {
+          cookieList.push({
+            name: 'csrftoken',
+            value: cookies.csrftoken,
+            domain: '.instagram.com',
+            path: '/',
+            secure: true
+          });
+        }
+        await page.setCookie(...cookieList);
       }
 
+      console.log(`[InstagramWebEngine] Navigating to https://www.instagram.com/...`);
       await page.goto('https://www.instagram.com/', { waitUntil: 'domcontentloaded', timeout: 45000 });
-      await new Promise(r => setTimeout(r, 5000));
+      await new Promise(r => setTimeout(r, 6000));
 
-      // Dismiss dialogs
-      try {
-        await page.evaluate(() => {
-          const buttons = Array.from(document.querySelectorAll('button, div[role="button"]')) as HTMLElement[];
-          for (const b of buttons) {
-            const t = (b.innerText || '').trim().toLowerCase();
-            if (t === 'not now' || t === 'cancel' || t === 'dismiss') {
-              b.click();
-            }
-          }
-        });
-      } catch (e) {}
+      const currentUrl = page.url();
+      console.log(`[InstagramWebEngine] Current URL: ${currentUrl}`);
 
-      // Click Create button
+      if (currentUrl.includes('/accounts/login/')) {
+        console.error(`[InstagramWebEngine] Session expired or invalid. Instagram redirected to login.`);
+        return {
+          success: false,
+          message: 'Instagram session is expired or invalid. Please check your INSTAGRAM_SESSION_ID.'
+        };
+      }
+
+      // Dismiss cookie consents and dialogs
+      console.log(`[InstagramWebEngine] Handling modals and cookie consents...`);
       await page.evaluate(() => {
+        const elements = Array.from(document.querySelectorAll('button, div[role="button"], a, span')) as HTMLElement[];
+        for (const el of elements) {
+          const t = (el.innerText || '').trim().toLowerCase();
+          if (
+            t === 'allow all cookies' ||
+            t === 'allow essential and optional cookies' ||
+            t === 'accept all' ||
+            t === 'accept' ||
+            t === 'decline optional cookies' ||
+            t === 'not now' ||
+            t === 'cancel' ||
+            t === 'dismiss' ||
+            t === 'save info'
+          ) {
+            el.click();
+          }
+        }
+      });
+
+      await new Promise(r => setTimeout(r, 3000));
+
+      // Click Create (+) button
+      console.log(`[InstagramWebEngine] Clicking Create Post button...`);
+      const clickedCreate = await page.evaluate(() => {
         const svgs = Array.from(document.querySelectorAll('svg'));
         for (const svg of svgs) {
           const label = svg.getAttribute('aria-label');
@@ -240,64 +290,98 @@ export class InstagramWebEngine {
             const parent = (svg.closest('a') || svg.closest('div[role="button"]') || svg) as HTMLElement;
             if (parent && typeof parent.click === 'function') {
               parent.click();
-              return;
+              return true;
             }
           }
         }
         const elements = Array.from(document.querySelectorAll('a, button, span, div')) as HTMLElement[];
         for (const el of elements) {
-          if (el.innerText && el.innerText.trim() === 'Create') {
+          if (el.innerText && (el.innerText.trim() === 'Create' || el.innerText.trim() === 'New post')) {
             el.click();
-            return;
+            return true;
           }
         }
+        return false;
       });
 
+      console.log(`[InstagramWebEngine] Create button clicked: ${clickedCreate}`);
       await new Promise(r => setTimeout(r, 4000));
 
-      const fileInput = await page.$('input[type="file"]');
+      let fileInput = await page.$('input[type="file"]');
+      if (!fileInput) {
+        console.log(`[InstagramWebEngine] Retrying to find file input...`);
+        await page.evaluate(() => {
+          const btn = Array.from(document.querySelectorAll('button, div[role="button"]')) as HTMLElement[];
+          for (const b of btn) {
+            if (b.innerText && (b.innerText.includes('Select from computer') || b.innerText.includes('Select'))) {
+              b.click();
+            }
+          }
+        });
+        await new Promise(r => setTimeout(r, 2000));
+        fileInput = await page.$('input[type="file"]');
+      }
+
       if (!fileInput) {
         return { success: false, message: 'Could not find file input on Instagram' };
       }
 
+      console.log(`[InstagramWebEngine] Uploading file from ${filePath}...`);
       await fileInput.uploadFile(filePath);
-      await new Promise(r => setTimeout(r, 4000));
+      await new Promise(r => setTimeout(r, 5000));
 
       const clickBtn = async (text: string) => {
-        await page.evaluate((t) => {
-          const btns = Array.from(document.querySelectorAll('button, div[role="button"], span')) as HTMLElement[];
+        console.log(`[InstagramWebEngine] Clicking button: "${text}"...`);
+        return await page.evaluate((t) => {
+          const btns = Array.from(document.querySelectorAll('button, div[role="button"], span, div')) as HTMLElement[];
           for (const b of btns) {
             if (b.innerText && b.innerText.trim().toLowerCase() === t.toLowerCase()) {
               b.click();
-              return;
+              return true;
             }
           }
+          return false;
         }, text);
       };
 
       // Next (Crop)
       await clickBtn('Next');
-      await new Promise(r => setTimeout(r, 3000));
+      await new Promise(r => setTimeout(r, 3500));
 
       // Next (Filter)
       await clickBtn('Next');
-      await new Promise(r => setTimeout(r, 3000));
+      await new Promise(r => setTimeout(r, 3500));
 
       // Caption
+      console.log(`[InstagramWebEngine] Entering caption...`);
       const captionBox = await page.$('div[aria-label="Write a caption..."], div[role="textbox"]');
       if (captionBox && caption) {
         await captionBox.click();
-        await page.keyboard.type(caption, { delay: 20 });
+        await page.evaluate((c) => {
+          const box = document.querySelector('div[aria-label="Write a caption..."], div[role="textbox"]') as HTMLElement;
+          if (box) {
+            box.focus();
+            document.execCommand('insertText', false, c);
+          }
+        }, caption);
+
+        const textLen = await page.evaluate(() => (document.querySelector('div[aria-label="Write a caption..."], div[role="textbox"]') as HTMLElement)?.innerText?.length || 0);
+        if (textLen < 5) {
+          await page.keyboard.type(caption, { delay: 10 });
+        }
       }
 
-      await new Promise(r => setTimeout(r, 2000));
+      await new Promise(r => setTimeout(r, 3000));
 
       // Share
+      console.log(`[InstagramWebEngine] Clicking Share...`);
       await clickBtn('Share');
-      await new Promise(r => setTimeout(r, 15000));
+      await new Promise(r => setTimeout(r, 18000));
 
+      console.log(`[InstagramWebEngine] Post published successfully!`);
       return { success: true, message: 'Post successfully published on Instagram!' };
     } catch (err: any) {
+      console.error(`[InstagramWebEngine] Error in uploadRealPost:`, err);
       return { success: false, message: `Live upload error: ${err.message}` };
     }
   }
