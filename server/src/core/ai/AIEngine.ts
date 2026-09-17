@@ -25,6 +25,8 @@ export interface ICriticScore {
   resolution: string;
 }
 
+import { audioEngine, ITrendingAudioTrack } from './AudioEngine';
+
 export interface IEmotionalQuoteResult {
   trendingTopic: string;
   category: string;
@@ -34,6 +36,9 @@ export interface IEmotionalQuoteResult {
   hashtags: string[];
   cardImageUrl: string;
   localImagePath: string;
+  videoReelPath?: string;
+  videoReelUrl?: string;
+  audioTrack?: ITrendingAudioTrack;
   callToAction: string;
   criticScore: ICriticScore;
 }
@@ -695,7 +700,16 @@ Comment "LINK" or "INFO" below and I'll send the full guide directly to your DMs
     // 1. Run through AI Critic Evaluation & Rating Loop
     const criticScore = this.evaluateQuoteCritic(chosen.quote, chosen.hook, category);
 
-    // 2. Render Ultra 4K (2160x2160) Resolution Quote Card Image
+    // 2. Select Matching Trending Emotional Audio Track
+    const audioTrack = audioEngine.getAudioForCategory(category);
+    let localAudioPath = '';
+    try {
+      localAudioPath = await audioEngine.ensureAudioFile(audioTrack);
+    } catch (e: any) {
+      console.warn(`[AIEngine] Audio fetch warning: ${e.message}`);
+    }
+
+    // 3. Render Ultra 4K (2160x2160) Resolution Quote Card Image
     const cardImage = await this.renderQuoteCardImage(
       chosen.quote,
       authorHandle,
@@ -704,11 +718,24 @@ Comment "LINK" or "INFO" below and I'll send the full guide directly to your DMs
       criticScore.overallRating
     );
 
+    // 4. Optionally generate Cinematic 4K Motion Reel Video with Music
+    let videoReelPath = '';
+    let videoReelUrl = '';
+    if (localAudioPath && cardImage.localPath && fs.existsSync(cardImage.localPath)) {
+      try {
+        videoReelPath = await audioEngine.createCinematicQuoteVideo(cardImage.localPath, localAudioPath, 10);
+        videoReelUrl = `/media/${path.basename(videoReelPath)}`;
+      } catch (err: any) {
+        console.warn(`[AIEngine] Motion video rendering fallback: ${err.message}`);
+      }
+    }
+
     const caption = `${chosen.quote}
 
 💭 सच कहूं तो:
 ${chosen.reflection}
 
+🎵 ऑडियो: ${audioTrack.title} (${audioTrack.mood})
 ━━━━━━━━━━━━━━━━━━━
 📌 अगर यह बात दिल को छुई हो, तो 2 बार Tap करें ❤️
 📩 अपने उस दोस्त के साथ Share करें जिसे आज इसकी जरूरत है।`;
@@ -722,7 +749,7 @@ ${chosen.reflection}
       'SadQuotes',
       'MotivationalQuotes',
       'ReelsIndia',
-      'TrendingNow',
+      'TrendingAudio',
       'ViralQuotes',
       'InstaHindi',
       'ShayariLover',
@@ -740,6 +767,9 @@ ${chosen.reflection}
       hashtags,
       cardImageUrl: cardImage.url,
       localImagePath: cardImage.localPath,
+      videoReelPath: videoReelPath || undefined,
+      videoReelUrl: videoReelUrl || undefined,
+      audioTrack,
       callToAction: `Follow ${authorHandle} for daily heartfelt quotes! ❤️`,
       criticScore
     };

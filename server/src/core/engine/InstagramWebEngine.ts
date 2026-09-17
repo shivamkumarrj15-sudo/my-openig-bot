@@ -358,43 +358,60 @@ export class InstagramWebEngine {
       await fileInput.uploadFile(filePath);
       await new Promise(r => setTimeout(r, 5000));
 
-      const clickBtn = async (text: string, maxTries = 4) => {
-        console.log(`[InstagramWebEngine] Clicking button: "${text}"...`);
-        for (let i = 0; i < maxTries; i++) {
-          const clicked = await page.evaluate((t: any) => {
-            const btns = Array.from(document.querySelectorAll('button, div[role="button"], span, div, a')) as HTMLElement[];
-            for (const b of btns) {
-              const inner = (b.innerText || '').trim().toLowerCase();
-              if (inner === t.toLowerCase() || inner.startsWith(t.toLowerCase())) {
-                b.click();
+      const clickModalBtn = async (btnText: string, maxWaitMs = 15000): Promise<boolean> => {
+        console.log(`[InstagramWebEngine] Looking for modal action button: "${btnText}"...`);
+        const startTime = Date.now();
+        while (Date.now() - startTime < maxWaitMs) {
+          const clicked = await page.evaluate((t: string) => {
+            // Priority: find inside modal dialog or top header
+            const elements = Array.from(document.querySelectorAll('div[role="dialog"] div[role="button"], div[role="dialog"] button, header div[role="button"], div[role="button"], button')) as HTMLElement[];
+            for (const el of elements) {
+              const txt = (el.innerText || '').trim().toLowerCase();
+              if (txt === t.toLowerCase()) {
+                el.click();
                 return true;
               }
             }
             return false;
-          }, text);
+          }, btnText);
+
           if (clicked) {
+            console.log(`[InstagramWebEngine] Clicked "${btnText}"!`);
             return true;
           }
-          await new Promise(r => setTimeout(r, 1500));
+          await new Promise(r => setTimeout(r, 1000));
         }
         return false;
       };
 
-      // Next (Crop)
-      const next1 = await clickBtn('Next');
-      console.log(`[InstagramWebEngine] Next (Crop) clicked: ${next1}`);
-      await new Promise(r => setTimeout(r, 3500));
+      // 1. Next from Crop Screen
+      console.log(`[InstagramWebEngine] Transitioning from Crop screen...`);
+      await new Promise(r => setTimeout(r, 3000));
+      const cropNext = await clickModalBtn('Next', 15000);
+      console.log(`[InstagramWebEngine] Crop Next result: ${cropNext}`);
+      await new Promise(r => setTimeout(r, 4000));
 
-      // Next (Filter)
-      const next2 = await clickBtn('Next');
-      console.log(`[InstagramWebEngine] Next (Filter) clicked: ${next2}`);
-      await new Promise(r => setTimeout(r, 3500));
+      // 2. Next from Edit/Filters Screen
+      console.log(`[InstagramWebEngine] Transitioning from Edit/Filters screen...`);
+      const editNext = await clickModalBtn('Next', 15000);
+      console.log(`[InstagramWebEngine] Filter Next result: ${editNext}`);
+      await new Promise(r => setTimeout(r, 4000));
 
-      // Caption
-      console.log(`[InstagramWebEngine] Entering caption...`);
-      const captionBox = await page.$('div[aria-label="Write a caption..."], div[role="textbox"]');
+      // 3. Caption Entry Screen
+      console.log(`[InstagramWebEngine] Entering caption on final screen...`);
+      // Wait for caption box to appear
+      let captionBox = await page.$('div[aria-label="Write a caption..."], div[role="textbox"]');
+      if (!captionBox) {
+        // In case previous next didn't fire, try clicking Next again
+        console.log(`[InstagramWebEngine] Retrying Next to reach caption screen...`);
+        await clickModalBtn('Next', 5000);
+        await new Promise(r => setTimeout(r, 3000));
+        captionBox = await page.$('div[aria-label="Write a caption..."], div[role="textbox"]');
+      }
+
       if (captionBox && caption) {
         await captionBox.click();
+        await new Promise(r => setTimeout(r, 800));
         await page.evaluate((c: any) => {
           const box = document.querySelector('div[aria-label="Write a caption..."], div[role="textbox"]') as HTMLElement;
           if (box) {
@@ -411,9 +428,9 @@ export class InstagramWebEngine {
 
       await new Promise(r => setTimeout(r, 3000));
 
-      // Share
-      console.log(`[InstagramWebEngine] Clicking Share...`);
-      const shareClicked = await clickBtn('Share', 5);
+      // 4. Click Share
+      console.log(`[InstagramWebEngine] Clicking Share button...`);
+      const shareClicked = await clickModalBtn('Share', 15000);
       console.log(`[InstagramWebEngine] Share clicked: ${shareClicked}`);
       if (!shareClicked) {
         const errPath = path.join(config.mediaDir, 'error_share_not_found.png');
@@ -423,7 +440,7 @@ export class InstagramWebEngine {
 
       console.log(`[InstagramWebEngine] Waiting for Instagram to process & share post...`);
       let verifiedShared = false;
-      for (let i = 0; i < 10; i++) {
+      for (let i = 0; i < 15; i++) {
         await new Promise(r => setTimeout(r, 2000));
         const check = await page.evaluate(() => {
           const text = (document.body.innerText || '').toLowerCase();
