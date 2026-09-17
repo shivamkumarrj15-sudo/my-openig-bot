@@ -1,3 +1,5 @@
+import fs from 'fs';
+import path from 'path';
 import { db } from '../../storage/DatabaseAdapter';
 import { aiEngine } from './AIEngine';
 import { instagramWebEngine } from '../engine/InstagramWebEngine';
@@ -55,11 +57,12 @@ async function runCron() {
   console.log('✨ Generating S+ Grade 4K Quote Card...');
   const quoteResult = await aiEngine.generateEmotionalQuote(chosenCategory, undefined, authorHandle);
   console.log(`⭐ Critic Rating: ${quoteResult.criticScore.overallRating}/100 [${quoteResult.criticScore.grade}]`);
-  console.log(`📜 Quote Text:\n${quoteResult.quoteText}`);
-  console.log(`🖼️ 4K Local Path: ${quoteResult.localImagePath}`);
+  const fileToUpload = (quoteResult.videoReelPath && fs.existsSync(quoteResult.videoReelPath))
+    ? quoteResult.videoReelPath
+    : quoteResult.localImagePath;
 
-  console.log('\n🚀 Uploading Post live to Instagram Web...');
-  const uploadResult = await instagramWebEngine.uploadRealPost(sessionId, quoteResult.localImagePath, quoteResult.caption);
+  console.log(`\n🚀 Uploading Post/Reel (${path.basename(fileToUpload)}) with Full Trending Audio live to Instagram Web...`);
+  const uploadResult = await instagramWebEngine.uploadRealPost(sessionId, fileToUpload, quoteResult.caption);
   console.log('Upload Response:', uploadResult);
 
   if (uploadResult.success) {

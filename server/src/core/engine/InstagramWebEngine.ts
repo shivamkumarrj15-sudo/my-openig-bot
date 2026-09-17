@@ -356,7 +356,19 @@ export class InstagramWebEngine {
 
       console.log(`[InstagramWebEngine] Uploading file from ${filePath}...`);
       await fileInput.uploadFile(filePath);
-      await new Promise(r => setTimeout(r, 5000));
+      await new Promise(r => setTimeout(r, 6000));
+
+      // Dismiss any "Video posts are now shared as reels" popups
+      await page.evaluate(() => {
+        const btns = Array.from(document.querySelectorAll('button, div[role="button"], span')) as HTMLElement[];
+        for (const b of btns) {
+          const t = (b.innerText || '').trim().toLowerCase();
+          if (t === 'ok' || t === 'got it' || t === 'continue' || t === 'dismiss') {
+            b.click();
+          }
+        }
+      });
+      await new Promise(r => setTimeout(r, 1500));
 
       const clickModalBtn = async (btnText: string, maxWaitMs = 15000): Promise<boolean> => {
         console.log(`[InstagramWebEngine] Looking for modal action button: "${btnText}"...`);
