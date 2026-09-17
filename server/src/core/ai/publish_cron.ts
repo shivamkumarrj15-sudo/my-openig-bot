@@ -8,10 +8,22 @@ async function runCron() {
   console.log('⏰ Timestamp:', new Date().toISOString());
   console.log('====================================================');
 
-  const sessionIdEnv = process.env.INSTAGRAM_SESSION_ID || '29180762911%3A8GHBcWmlbEFceL%3A23%3AAYlJwNdrLqQwzCb8JiwPoU_CJ_3y6CJGmzFfRNHACg';
-  const dsUserId = process.env.INSTAGRAM_USER_ID || '29180762911';
-  const username = process.env.INSTAGRAM_USERNAME || 'shivamkumar12323229';
+  const rawSession = process.env.INSTAGRAM_SESSION_ID?.trim();
+  const sessionIdEnv = (rawSession && rawSession !== 'true' && rawSession !== 'false' && rawSession.length > 5)
+    ? rawSession
+    : '29180762911%3A8GHBcWmlbEFceL%3A23%3AAYlJwNdrLqQwzCb8JiwPoU_CJ_3y6CJGmzFfRNHACg';
 
+  const rawUserId = process.env.INSTAGRAM_USER_ID?.trim();
+  const dsUserId = (rawUserId && rawUserId !== 'true' && rawUserId !== 'false' && rawUserId.length > 3)
+    ? rawUserId
+    : '29180762911';
+
+  const rawUsername = process.env.INSTAGRAM_USERNAME?.trim();
+  const username = (rawUsername && rawUsername !== 'true' && rawUsername !== 'false' && rawUsername.length > 2)
+    ? rawUsername
+    : 'shivamkumar12323229';
+
+  console.log(`👤 Target Instagram Account: @${username} (UID: ${dsUserId})`);
   const sessionId = `ig_${username}_cloud`;
   db.upsertSession({
     id: sessionId,

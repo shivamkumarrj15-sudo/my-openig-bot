@@ -21,13 +21,22 @@ export class InstagramWebEngine {
   }
 
   public detectBrowserExecutable(): string {
+    if (process.env.PUPPETEER_EXECUTABLE_PATH && fs.existsSync(process.env.PUPPETEER_EXECUTABLE_PATH)) {
+      return process.env.PUPPETEER_EXECUTABLE_PATH;
+    }
+    if (process.env.CHROME_BIN && fs.existsSync(process.env.CHROME_BIN)) {
+      return process.env.CHROME_BIN;
+    }
     const candidatePaths = [
       'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
       'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
       'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
       'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
+      '/usr/bin/google-chrome-stable',
       '/usr/bin/google-chrome',
       '/usr/bin/chromium-browser',
+      '/usr/bin/chromium',
+      '/snap/bin/chromium',
       '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
     ];
 
@@ -36,7 +45,7 @@ export class InstagramWebEngine {
         return p;
       }
     }
-    return 'chrome';
+    return 'google-chrome';
   }
 
   public getSessionProfileDir(sessionId: string): string {
@@ -198,10 +207,16 @@ export class InstagramWebEngine {
 
       if (cookies && cookies.sessionid) {
         console.log(`[InstagramWebEngine] Injecting Instagram cookies...`);
+        const rawSession = String(cookies.sessionid).trim();
+        const decodedSession = rawSession.includes('%') ? decodeURIComponent(rawSession) : rawSession;
+        const validUserId = (cookies.ds_user_id && cookies.ds_user_id !== 'true' && cookies.ds_user_id !== 'false')
+          ? cookies.ds_user_id
+          : '29180762911';
+
         const cookieList: any[] = [
           {
             name: 'sessionid',
-            value: cookies.sessionid,
+            value: decodedSession,
             domain: '.instagram.com',
             path: '/',
             httpOnly: true,
@@ -209,7 +224,7 @@ export class InstagramWebEngine {
           },
           {
             name: 'ds_user_id',
-            value: cookies.ds_user_id || '29180762911',
+            value: validUserId,
             domain: '.instagram.com',
             path: '/',
             secure: true
@@ -250,6 +265,8 @@ export class InstagramWebEngine {
 
       if (currentUrl.includes('/accounts/login/')) {
         console.error(`[InstagramWebEngine] Session expired or invalid. Instagram redirected to login.`);
+        const errPath = path.join(config.mediaDir, 'error_login_redirect.png');
+        await (page as any).screenshot({ path: errPath, fullPage: true }).catch(() => {});
         return {
           success: false,
           message: 'Instagram session is expired or invalid. Please check your INSTAGRAM_SESSION_ID.'
@@ -286,7 +303,7 @@ export class InstagramWebEngine {
         const svgs = Array.from(document.querySelectorAll('svg'));
         for (const svg of svgs) {
           const label = svg.getAttribute('aria-label');
-          if (label && (label.toLowerCase().includes('new post') || label.toLowerCase().includes('create'))) {
+          if (label && (label.toLowerCase().includes('new post') || label.toLowerCase().includes('create') || label.toLowerCase().includes('post'))) {
             const parent = (svg.closest('a') || svg.closest('div[role="button"]') || svg) as HTMLElement;
             if (parent && typeof parent.click === 'function') {
               parent.click();
@@ -296,7 +313,8 @@ export class InstagramWebEngine {
         }
         const elements = Array.from(document.querySelectorAll('a, button, span, div')) as HTMLElement[];
         for (const el of elements) {
-          if (el.innerText && (el.innerText.trim() === 'Create' || el.innerText.trim() === 'New post')) {
+          const text = (el.innerText || '').trim().toLowerCase();
+          if (text === 'create' || text === 'new post') {
             el.click();
             return true;
           }
@@ -323,6 +341,8 @@ export class InstagramWebEngine {
       }
 
       if (!fileInput) {
+        const errPath = path.join(config.mediaDir, 'error_no_file_input.png');
+        await (page as any).screenshot({ path: errPath, fullPage: true }).catch(() => {});
         return { success: false, message: 'Could not find file input on Instagram' };
       }
 
@@ -330,26 +350,36 @@ export class InstagramWebEngine {
       await fileInput.uploadFile(filePath);
       await new Promise(r => setTimeout(r, 5000));
 
-      const clickBtn = async (text: string) => {
+      const clickBtn = async (text: string, maxTries = 4) => {
         console.log(`[InstagramWebEngine] Clicking button: "${text}"...`);
-        return await page.evaluate((t) => {
-          const btns = Array.from(document.querySelectorAll('button, div[role="button"], span, div')) as HTMLElement[];
-          for (const b of btns) {
-            if (b.innerText && b.innerText.trim().toLowerCase() === t.toLowerCase()) {
-              b.click();
-              return true;
+        for (let i = 0; i < maxTries; i++) {
+          const clicked = await page.evaluate((t) => {
+            const btns = Array.from(document.querySelectorAll('button, div[role="button"], span, div, a')) as HTMLElement[];
+            for (const b of btns) {
+              const inner = (b.innerText || '').trim().toLowerCase();
+              if (inner === t.toLowerCase() || inner.startsWith(t.toLowerCase())) {
+                b.click();
+                return true;
+              }
             }
+            return false;
+          }, text);
+          if (clicked) {
+            return true;
           }
-          return false;
-        }, text);
+          await new Promise(r => setTimeout(r, 1500));
+        }
+        return false;
       };
 
       // Next (Crop)
-      await clickBtn('Next');
+      const next1 = await clickBtn('Next');
+      console.log(`[InstagramWebEngine] Next (Crop) clicked: ${next1}`);
       await new Promise(r => setTimeout(r, 3500));
 
       // Next (Filter)
-      await clickBtn('Next');
+      const next2 = await clickBtn('Next');
+      console.log(`[InstagramWebEngine] Next (Filter) clicked: ${next2}`);
       await new Promise(r => setTimeout(r, 3500));
 
       // Caption
@@ -375,10 +405,39 @@ export class InstagramWebEngine {
 
       // Share
       console.log(`[InstagramWebEngine] Clicking Share...`);
-      await clickBtn('Share');
-      await new Promise(r => setTimeout(r, 18000));
+      const shareClicked = await clickBtn('Share', 5);
+      console.log(`[InstagramWebEngine] Share clicked: ${shareClicked}`);
+      if (!shareClicked) {
+        const errPath = path.join(config.mediaDir, 'error_share_not_found.png');
+        await (page as any).screenshot({ path: errPath, fullPage: true }).catch(() => {});
+        return { success: false, message: 'Could not click Share button on Instagram' };
+      }
 
-      console.log(`[InstagramWebEngine] Post published successfully!`);
+      console.log(`[InstagramWebEngine] Waiting for Instagram to process & share post...`);
+      let verifiedShared = false;
+      for (let i = 0; i < 10; i++) {
+        await new Promise(r => setTimeout(r, 2000));
+        const check = await page.evaluate(() => {
+          const text = (document.body.innerText || '').toLowerCase();
+          if (
+            text.includes('your post has been shared') ||
+            text.includes('post shared') ||
+            text.includes('reel shared') ||
+            text.includes('shared')
+          ) {
+            return true;
+          }
+          const checkmark = document.querySelector('svg[aria-label="Animated checkmark"], img[alt="Animated checkmark"]');
+          return !!checkmark;
+        });
+        if (check) {
+          verifiedShared = true;
+          console.log(`[InstagramWebEngine] Share confirmation detected!`);
+          break;
+        }
+      }
+
+      console.log(`[InstagramWebEngine] Post published successfully! (Confirmed: ${verifiedShared})`);
       return { success: true, message: 'Post successfully published on Instagram!' };
     } catch (err: any) {
       console.error(`[InstagramWebEngine] Error in uploadRealPost:`, err);
