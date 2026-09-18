@@ -55,18 +55,38 @@ async function runCron() {
     ? envCategory
     : allCategories[Math.floor(Math.random() * allCategories.length)];
 
-  console.log(`\n🎯 Selected Category: ${chosenCategory}`);
+  const postType = (process.env.POST_TYPE?.trim().toLowerCase() || 'auto') as 'simple' | 'reel' | 'ai_video' | 'auto';
+  console.log(`\n🎯 Selected Category: ${chosenCategory} | Mode: ${postType.toUpperCase()}`);
   const authorHandle = `@${username}`;
 
-  console.log('✨ Generating S+ Grade 4K Quote Card...');
-  const quoteResult = await aiEngine.generateEmotionalQuote(chosenCategory, undefined, authorHandle);
-  console.log(`⭐ Critic Rating: ${quoteResult.criticScore.overallRating}/100 [${quoteResult.criticScore.grade}]`);
-  const fileToUpload = (quoteResult.videoReelPath && fs.existsSync(quoteResult.videoReelPath))
-    ? quoteResult.videoReelPath
-    : quoteResult.localImagePath;
+  let fileToUpload = '';
+  let caption = '';
 
-  console.log(`\n🚀 Uploading Post/Reel (${path.basename(fileToUpload)}) with Full Trending Audio live to Instagram Web...`);
-  const uploadResult = await instagramWebEngine.uploadRealPost(sessionId, fileToUpload, quoteResult.caption);
+  if (postType === 'ai_video') {
+    console.log('🤖 Generating Full AI Video with MoneyPrinter Turbo (Stock Footage + Hindi Voiceover + Subtitles)...');
+    const aiVideoRes = await aiEngine.generateMoneyPrinterAIVideo(chosenCategory, undefined, authorHandle);
+    fileToUpload = aiVideoRes.videoPath;
+    caption = aiVideoRes.caption;
+    console.log(`⭐ Critic Rating: ${aiVideoRes.criticScore.overallRating}/100 [${aiVideoRes.criticScore.grade}]`);
+  } else if (postType === 'simple') {
+    console.log('✨ Generating S+ Grade 4K Simple Quote Card Image...');
+    const quoteResult = await aiEngine.generateEmotionalQuote(chosenCategory, undefined, authorHandle);
+    fileToUpload = quoteResult.localImagePath;
+    caption = quoteResult.caption;
+    console.log(`⭐ Critic Rating: ${quoteResult.criticScore.overallRating}/100 [${quoteResult.criticScore.grade}]`);
+  } else {
+    // 'reel' or 'auto'
+    console.log('✨ Generating 20-Second 9:16 Fullscreen Cinema Motion Reel...');
+    const quoteResult = await aiEngine.generateEmotionalQuote(chosenCategory, undefined, authorHandle);
+    fileToUpload = (quoteResult.videoReelPath && fs.existsSync(quoteResult.videoReelPath))
+      ? quoteResult.videoReelPath
+      : quoteResult.localImagePath;
+    caption = quoteResult.caption;
+    console.log(`⭐ Critic Rating: ${quoteResult.criticScore.overallRating}/100 [${quoteResult.criticScore.grade}]`);
+  }
+
+  console.log(`\n🚀 Uploading (${path.basename(fileToUpload)}) live to Instagram Web...`);
+  const uploadResult = await instagramWebEngine.uploadRealPost(sessionId, fileToUpload, caption);
   console.log('Upload Response:', uploadResult);
 
   if (uploadResult.success) {

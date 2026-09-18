@@ -4,6 +4,7 @@ import axios from 'axios';
 import puppeteer from 'puppeteer-core';
 import { config as appConfig } from '../../config';
 import { db, IAIPilotConfig } from '../../storage/DatabaseAdapter';
+import { moneyPrinterEngine } from './MoneyPrinterEngine';
 
 export interface IAIPostResult {
   topic: string;
@@ -933,6 +934,166 @@ ${chosen.reflection}
       videoReelUrl: videoReelUrl || undefined,
       audioTrack,
       callToAction: `Follow ${authorHandle} for daily heartfelt quotes! ❤️`,
+      criticScore
+    };
+  }
+
+  /**
+   * Generate Full AI Video with Stock Footage, Hindi Voiceover & Subtitles using MoneyPrinter Turbo
+   */
+  public async generateMoneyPrinterAIVideo(
+    category = 'life_reality',
+    customTopic?: string,
+    authorHandle = '@shivamkumar12323229'
+  ): Promise<{
+    success: boolean;
+    videoPath: string;
+    caption: string;
+    hashtags: string[];
+    quoteText: string;
+    criticScore: ICriticScore;
+  }> {
+    const quotesDatabase: Record<string, Array<{ quote: string; badge: string; hook: string; reflection: string }>> = {
+      life_reality: [
+        {
+          quote: "वक्त और किस्मत पर कभी घमंड मत करना, क्योंकि सुबह उनकी भी होती है जिनके दिन खराब होते हैं।",
+          badge: "✦ ज़िन्दगी का सच ✦",
+          hook: "जिंदगी का सबसे बड़ा कड़वा सच...",
+          reflection: "हम अक्सर उन चीजों के पीछे भागते हैं जो हमारे हाथ में नहीं होतीं, और उस वक्त को भूल जाते हैं जो हमें संवार सकता है।"
+        },
+        {
+          quote: "कुछ बातें तब समझ आती हैं, जब हम उस दौर से खुद अकेले गुज़रते हैं।",
+          badge: "✦ ज़िन्दगी का सबक ✦",
+          hook: "अनुभव उम्र से नहीं, हालातों से आता है...",
+          reflection: "दुनिया की कोई भी किताब वो सबक नहीं सिखा सकती, जो वक्त और ठोकरें एक पल में सिखा देती हैं।"
+        },
+        {
+          quote: "सलीका ही नहीं आया हमें खुद को मशहूर करने का, वरना नकाब तो हम भी चेहरों पर कई सजा सकते थे।",
+          badge: "✦ सादगी और सच ✦",
+          hook: "झूठी दुनिया में सच्चे इंसान का हाल...",
+          reflection: "सादगी से जीना कमज़ोरी नहीं, बल्कि उन लोगों के बीच सबसे बड़ा हौसला है जो हर रोज़ अपना चेहरा बदलते हैं।"
+        }
+      ],
+      time_trust: [
+        {
+          quote: "लोग बदलते नहीं हैं जनाब, बस उनके चेहरे से मतलब का नकाब उतर जाता है।",
+          badge: "✦ वक्त और भरोसा ✦",
+          hook: "भरोसा कांच की तरह होता है...",
+          reflection: "एक बार टूटने के बाद कितना भी जोड़ लो, दरारें हमेशा अपनी मौजूदगी का अहसास कराती रहती हैं।"
+        },
+        {
+          quote: "सब्र की एक बात बहुत अच्छी होती है, जब आता है तो हर चीज़ का हिसाब बराबर कर देता है।",
+          badge: "✦ सब्र का फल ✦",
+          hook: "कुदरत का फैसला कभी गलत नहीं होता...",
+          reflection: "जब आप किसी के साथ नेक दिल से खड़े होते हैं, तो ऊपर वाला आपकी खामोशी का जवाब अपनी अदालत में देता है।"
+        }
+      ],
+      silent_hustle: [
+        {
+          quote: "ख़ामोशी से की गई मेहनत एक दिन इतना शोर मचाती है कि पूरी दुनिया को सुनना पड़ता है।",
+          badge: "✦ खामोश मेहनत ✦",
+          hook: "अपने सपनों का ढिंढोरा मत पीटो...",
+          reflection: "कामयाबी तब सबसे मीठी लगती है, जब आप बिना किसी को बताए चुपचाप अपनी मंजिल की तरफ बढ़ते रहते हैं।"
+        },
+        {
+          quote: "अकेले चलने का हौसला रखो, क्योंकि काफिले हमेशा उनके पीछे चलते हैं जो राह खुद बनाते हैं।",
+          badge: "✦ अकेलेपन की ताकत ✦",
+          hook: "भीड़ का हिस्सा मत बनो...",
+          reflection: "शुरुआत में सब अकेला छोड़ देंगे, लेकिन जब आप सफल होंगे तो वही लोग आपकी मिसालें देंगे।"
+        }
+      ],
+      heartbreak_healing: [
+        {
+          quote: "दिल टूटने का मतलब सफर का अंत नहीं, बल्कि खुद को नए सिरे से ढूंढने की सबसे खूबसूरत शुरुआत है।",
+          badge: "✦ हीलिंग और सब्र ✦",
+          hook: "हर दर्द एक नया रास्ता खोलता है...",
+          reflection: "टूटना बुरा नहीं होता, अगर वो आपको पहले से ज्यादा समझदार और मजबूत इंसान बना दे।"
+        }
+      ],
+      mindset_psychology: [
+        {
+          quote: "जिंदगी में वही इंसान आगे बढ़ता है, जो हालात का रोना रोने के बजाय समाधान ढूंढने में विश्वास रखता है।",
+          badge: "✦ मजबूत सोच ✦",
+          hook: "माइंडसेट ही सब कुछ तय करता है...",
+          reflection: "समस्याएं हर किसी की जिंदगी में आती हैं, लेकिन विजेता वही बनता है जो हर चुनौती में अवसर तलाश लेता है।"
+        }
+      ],
+      maa_baap_family: [
+        {
+          quote: "पूरी दुनिया में सिर्फ मां-बाप ही ऐसे होते हैं, जो खुद खाली पेट सोकर भी अपने बच्चों के सपने पूरे करते हैं।",
+          badge: "✦ अनमोल मां-बाप ✦",
+          hook: "दुनिया का सबसे निस्वार्थ प्यार...",
+          reflection: "माता-पिता के पसीने की हर बूंद का कर्ज हम जिंदगी भर नहीं चुका सकते। उनकी कद्र उनके रहते करो।"
+        }
+      ],
+      fake_people: [
+        {
+          quote: "आजकल रिश्ते भी धूप की तरह हो गए हैं, जब तक जरूरत होती है लोग तब तक ही आपके साथ खड़े रहते हैं।",
+          badge: "✦ मतलबी दुनिया ✦",
+          hook: "नकली रिश्तों का असली चेहरा...",
+          reflection: "जब काम निकल जाता है, तो सबसे मीठा बोलने वाले लोग भी आपको पहचानना छोड़ देते हैं।"
+        }
+      ]
+    };
+
+    const categoriesList = Object.keys(quotesDatabase);
+    const selectedKey = quotesDatabase[category] ? category : categoriesList[Math.floor(Math.random() * categoriesList.length)];
+    const list = quotesDatabase[selectedKey];
+    const chosen = list[Math.floor(Math.random() * list.length)];
+
+    const subject = customTopic || chosen.badge.replace(/[✦\s]/g, '') || 'ज़िंदगी का सच';
+    const script = `${chosen.quote} ${chosen.reflection}`;
+
+    console.log(`[AIEngine] Generating AI Video via MoneyPrinter Turbo for: "${subject}"...`);
+    const mptResult = await moneyPrinterEngine.generateAIVideo({
+      subject,
+      script,
+      aspectRatio: '9:16',
+      language: 'hi-IN',
+      voiceName: 'hi-IN-SwaraNeural-Female',
+      bgmType: 'random',
+      subtitleEnabled: true
+    });
+
+    if (!mptResult.success || !mptResult.videoPath) {
+      throw new Error(mptResult.message || 'MoneyPrinter Turbo AI Video generation failed');
+    }
+
+    const criticScore = this.evaluateQuoteCritic(chosen.quote, chosen.hook, selectedKey);
+
+    const caption = `${chosen.quote}
+
+💭 कभी ठहर कर सोचा है?
+${chosen.reflection}
+
+🎬 AI Video Created with MoneyPrinter Turbo (Real Stock Footage + Hindi Voiceover + Subtitles)
+━━━━━━━━━━━━━━━━━━━
+📌 अगर यह बात सीधे आपके दिल को छुई हो, तो इस वीडियो को Save 🔖 करें!
+📩 उस ख़ास दोस्त के साथ Share करें जिसे आज यह सुनने की सबसे ज़्यादा ज़रूरत है।
+💬 क्या आप इस बात से सहमत हैं? अपनी राय नीचे कमेंट्स में ज़रूर बताएं 👇`;
+
+    const hashtags = [
+      'HindiQuotes',
+      'Zindagi',
+      'DeepThoughts',
+      'HindiShayari',
+      'LifeLessons',
+      'EmotionalReels',
+      'AIVideo',
+      'MoneyPrinterTurbo',
+      'ReelsIndia',
+      'TrendingAudio',
+      'ViralQuotes',
+      'InstaHindi',
+      'ShayariLover'
+    ];
+
+    return {
+      success: true,
+      videoPath: mptResult.videoPath,
+      caption,
+      hashtags,
+      quoteText: chosen.quote,
       criticScore
     };
   }
