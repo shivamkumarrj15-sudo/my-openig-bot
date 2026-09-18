@@ -431,21 +431,76 @@ Comment "LINK" or "INFO" below and I'll send the full guide directly to your DMs
   }
 
   /**
-   * Render Ultra 4K Resolution (2160x2160) Cinematic Aesthetic Quote Card Image
+   * Render Ultra Cinematic Aesthetic Quote Card (9:16 Fullscreen Vertical Cinema or 1:1 Square)
    */
   public async renderQuoteCardImage(
     quoteText: string,
     authorHandle: string = '@shivamkumar12323229',
     badgeTag: string = '✦ ज़िन्दगी का सच ✦',
     criticGrade: string = 'S+ Ultra-Masterpiece',
-    criticRating: number = 98.5
+    criticRating: number = 98.5,
+    aspectRatio: '9:16' | '1:1' = '9:16'
   ): Promise<{ localPath: string; url: string }> {
-    const filename = `quote_4k_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.png`;
+    const filename = `quote_${aspectRatio.replace(':', '_')}_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.png`;
     const localPath = path.join(appConfig.mediaDir, filename);
 
     if (!fs.existsSync(appConfig.mediaDir)) {
       fs.mkdirSync(appConfig.mediaDir, { recursive: true });
     }
+
+    const isVertical = aspectRatio === '9:16';
+    const canvasWidth = isVertical ? 1080 : 1080;
+    const canvasHeight = isVertical ? 1920 : 1080;
+
+    // 4 Dynamic Aesthetic Themes
+    const themes = [
+      {
+        id: 'noir_amber',
+        bg: '#050307',
+        gradient: 'radial-gradient(circle at 50% 45%, #2a1608 0%, #150a04 40%, #080302 75%, #020101 100%)',
+        ambientGlow: 'rgba(245, 158, 11, 0.16)',
+        symbolColor: '#f59e0b',
+        textGradient: 'linear-gradient(180deg, #ffffff 0%, #fef3c7 60%, #fde68a 100%)',
+        badgeBorder: 'rgba(245, 158, 11, 0.35)',
+        badgeBg: 'rgba(245, 158, 11, 0.08)',
+        badgeColor: '#fbbf24'
+      },
+      {
+        id: 'midnight_indigo',
+        bg: '#03050a',
+        gradient: 'radial-gradient(circle at 50% 45%, #101c36 0%, #090f1f 40%, #04070e 75%, #010204 100%)',
+        ambientGlow: 'rgba(96, 165, 250, 0.16)',
+        symbolColor: '#60a5fa',
+        textGradient: 'linear-gradient(180deg, #ffffff 0%, #e0f2fe 60%, #bae6fd 100%)',
+        badgeBorder: 'rgba(96, 165, 250, 0.35)',
+        badgeBg: 'rgba(96, 165, 250, 0.08)',
+        badgeColor: '#93c5fd'
+      },
+      {
+        id: 'velvet_wine',
+        bg: '#070205',
+        gradient: 'radial-gradient(circle at 50% 45%, #2c0b1a 0%, #17040d 40%, #0a0105 75%, #020001 100%)',
+        ambientGlow: 'rgba(244, 63, 94, 0.16)',
+        symbolColor: '#f43f5e',
+        textGradient: 'linear-gradient(180deg, #ffffff 0%, #ffe4e6 60%, #fecdd3 100%)',
+        badgeBorder: 'rgba(244, 63, 94, 0.35)',
+        badgeBg: 'rgba(244, 63, 94, 0.08)',
+        badgeColor: '#fda4af'
+      },
+      {
+        id: 'charcoal_pearl',
+        bg: '#060606',
+        gradient: 'radial-gradient(circle at 50% 45%, #1c1c1e 0%, #111112 40%, #080809 75%, #020202 100%)',
+        ambientGlow: 'rgba(255, 255, 255, 0.10)',
+        symbolColor: '#e2e8f0',
+        textGradient: 'linear-gradient(180deg, #ffffff 0%, #f1f5f9 60%, #cbd5e1 100%)',
+        badgeBorder: 'rgba(255, 255, 255, 0.25)',
+        badgeBg: 'rgba(255, 255, 255, 0.06)',
+        badgeColor: '#e2e8f0'
+      }
+    ];
+
+    const chosenTheme = themes[Math.floor(Math.random() * themes.length)];
 
     try {
       const executable = this.detectBrowserExecutable();
@@ -462,7 +517,10 @@ Comment "LINK" or "INFO" below and I'll send the full guide directly to your DMs
       });
 
       const page = await browser.newPage();
-      await page.setViewport({ width: 2160, height: 2160, deviceScaleFactor: 2 });
+      await page.setViewport({ width: canvasWidth, height: canvasHeight, deviceScaleFactor: 2 });
+
+      const fontSize = isVertical ? '54px' : '58px';
+      const symbolSize = isVertical ? '110px' : '120px';
 
       const html = `
       <!DOCTYPE html>
@@ -473,9 +531,9 @@ Comment "LINK" or "INFO" below and I'll send the full guide directly to your DMs
           @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Outfit:wght@400;500;600;700;800&family=Noto+Serif+Devanagari:wght@600;700;800&family=Rozha+One&family=Poppins:wght@500;600;700&display=swap');
           * { box-sizing: border-box; margin: 0; padding: 0; }
           body {
-            width: 2160px;
-            height: 2160px;
-            background: #060309;
+            width: ${canvasWidth}px;
+            height: ${canvasHeight}px;
+            background: ${chosenTheme.bg};
             display: flex;
             align-items: center;
             justify-content: center;
@@ -483,27 +541,26 @@ Comment "LINK" or "INFO" below and I'll send the full guide directly to your DMs
             color: #ffffff;
             position: relative;
             overflow: hidden;
-            background-image: 
-              radial-gradient(circle at 50% 42%, #2c1635 0%, #1a0b22 35%, #0c0410 70%, #040106 100%);
+            background-image: ${chosenTheme.gradient};
           }
           
-          /* Ambient Atmospheric Lighting */
+          /* Ambient Atmospheric Soft Light */
           .ambient-light {
             position: absolute;
-            width: 1200px;
-            height: 1200px;
-            background: radial-gradient(circle, rgba(217, 119, 6, 0.12) 0%, rgba(236, 72, 153, 0.08) 45%, transparent 70%);
-            filter: blur(140px);
-            top: 25%;
-            left: 22%;
+            width: 800px;
+            height: 800px;
+            background: radial-gradient(circle, ${chosenTheme.ambientGlow} 0%, transparent 70%);
+            filter: blur(100px);
+            top: 30%;
+            left: 15%;
             pointer-events: none;
           }
 
           /* Pure Minimalist Quote Container */
           .quote-container {
             width: 100%;
-            max-width: 1750px;
-            padding: 80px 100px;
+            max-width: ${isVertical ? '920px' : '950px'};
+            padding: ${isVertical ? '80px 50px' : '60px 50px'};
             text-align: center;
             position: relative;
             z-index: 10;
@@ -513,38 +570,79 @@ Comment "LINK" or "INFO" below and I'll send the full guide directly to your DMs
             justify-content: center;
           }
 
+          /* Top Hook Pill Badge */
+          .hook-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 10px 28px;
+            border-radius: 999px;
+            background: ${chosenTheme.badgeBg};
+            border: 1px solid ${chosenTheme.badgeBorder};
+            color: ${chosenTheme.badgeColor};
+            font-family: 'Outfit', 'Poppins', sans-serif;
+            font-size: 20px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            margin-bottom: ${isVertical ? '48px' : '36px'};
+            text-transform: uppercase;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+          }
+
           .quote-symbol {
-            font-size: 200px;
+            font-size: ${symbolSize};
             line-height: 0.7;
             font-family: 'Cinzel', serif;
-            color: #f59e0b;
-            opacity: 0.9;
+            color: ${chosenTheme.symbolColor};
+            opacity: 0.95;
             display: block;
-            margin-bottom: 50px;
-            text-shadow: 0 0 50px rgba(245, 158, 11, 0.5);
+            margin-bottom: ${isVertical ? '35px' : '28px'};
+            text-shadow: 0 0 40px ${chosenTheme.symbolColor}88;
           }
 
           .quote-body {
-            font-size: 88px;
+            font-size: ${fontSize};
             font-weight: 700;
-            line-height: 1.65;
-            letter-spacing: 1px;
+            line-height: 1.72;
+            letter-spacing: 0.8px;
             text-align: center;
             color: #ffffff;
-            background: linear-gradient(180deg, #ffffff 0%, #fef3c7 60%, #fed7aa 100%);
+            background: ${chosenTheme.textGradient};
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
-            text-shadow: 0 10px 40px rgba(0, 0, 0, 0.95);
-            padding: 0 40px;
+            text-shadow: 0 8px 30px rgba(0, 0, 0, 0.95);
+            padding: 0 20px;
+          }
+
+          /* Bottom Clean Human Handle Signature */
+          .author-signature {
+            margin-top: ${isVertical ? '65px' : '45px'};
+            font-family: 'Outfit', sans-serif;
+            font-size: 19px;
+            font-weight: 500;
+            letter-spacing: 1.5px;
+            color: rgba(255, 255, 255, 0.65);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+          }
+
+          .author-dot {
+            color: ${chosenTheme.symbolColor};
+            font-size: 14px;
           }
         </style>
       </head>
       <body>
         <div class="ambient-light"></div>
         <div class="quote-container">
+          <div class="hook-badge">${badgeTag}</div>
           <span class="quote-symbol">“</span>
           <div class="quote-body">
             ${quoteText.replace(/\n/g, '<br/>')}
+          </div>
+          <div class="author-signature">
+            <span class="author-dot">✦</span> ${authorHandle} <span class="author-dot">✦</span>
           </div>
         </div>
       </body>
@@ -598,6 +696,18 @@ Comment "LINK" or "INFO" below and I'll send the full guide directly to your DMs
           badge: "✦ दुनिया का सच ✦",
           hook: "लोगों की फितरत का असली चेहरा...",
           reflection: "दूसरों की राय से अपनी कीमत तय मत करो। दुनिया का काम सिर्फ कमियां निकालना है।"
+        },
+        {
+          quote: "सलीका ही नहीं आया हमें खुद को मशहूर करने का,\nवरना नकाब तो हम भी चेहरों पर कई सजा सकते थे... 🥀",
+          badge: "✦ सादगी और सच ✦",
+          hook: "झूठी दुनिया में सच्चे इंसान का हाल...",
+          reflection: "सादगी से जीना कमज़ोरी नहीं, बल्कि उन लोगों के बीच सबसे बड़ा हौसला है जो हर रोज़ अपना चेहरा बदलते हैं।"
+        },
+        {
+          quote: "जिंदगी ने एक बात बहुत अच्छी सिखाई,\nकिसी के इतने करीब मत जाओ कि उसके दूर जाने से आप खुद को ही खो दो... 🖤",
+          badge: "✦ गहरा सबक ✦",
+          hook: "उम्मीदें हमेशा खुद से रखो...",
+          reflection: "जब आप किसी पर हद से ज्यादा निर्भर हो जाते हैं, तो उसका बदलता व्यवहार आपकी रूह तक को तोड़ देता है।"
         }
       ],
       time_trust: [
@@ -624,6 +734,12 @@ Comment "LINK" or "INFO" below and I'll send the full guide directly to your DMs
           badge: "✦ वक्त का तमाशा ✦",
           hook: "वक्त सबको अपनी औकात दिखाता है...",
           reflection: "अपने आत्मसम्मान से कभी समझौता मत करो। जो आज आपको नजरअंदाज कर रहे हैं, कल वो आपकी मिसाल देंगे।"
+        },
+        {
+          quote: "वक्त जब भी करवट लेता है जनाब,\nतो बाजियां नहीं, पूरी की पूरी जिंदगी पलट जाती है... ⏳⚖️",
+          badge: "✦ वक्त की अदालत ✦",
+          hook: "वक्त किसी का गुलाम नहीं होता...",
+          reflection: "ऊपर वाले की लाठी में आवाज नहीं होती, लेकिन जब वो इंसाफ करता है तो हर गुरूर मिट्टी में मिल जाता है।"
         }
       ],
       silent_hustle: [
@@ -650,6 +766,12 @@ Comment "LINK" or "INFO" below and I'll send the full guide directly to your DMs
           badge: "✦ स्वाभिमान ✦",
           hook: "जवाब बातों से नहीं, नतीजों से दो...",
           reflection: "किसी को साबित करने के लिए मत जियो। अपनी काबिलियत को तराशने में वक्त लगाओ।"
+        },
+        {
+          quote: "खुद को इतना काबिल बना लो कि\nतुम्हें ठुकराने वाले पूरी जिंदगी तुम्हें देखने के लिए तरस जाएं... 💎🔥",
+          badge: "✦ जीत का जुनून ✦",
+          hook: "असली बदला अपनी तरक्की है...",
+          reflection: "नफरत में वक्त बर्बाद करने से अच्छा है कि अपनी ऊर्जा को अपने सपनों को सच करने में लगा दो।"
         }
       ],
       heartbreak_healing: [
@@ -670,6 +792,12 @@ Comment "LINK" or "INFO" below and I'll send the full guide directly to your DMs
           badge: "✦ हीलिंग और सब्र ✦",
           hook: "हर दर्द एक नया रास्ता खोलता है...",
           reflection: "टूटना बुरा नहीं होता, अगर वो आपको पहले से ज्यादा समझदार और मजबूत इंसान बना दे।"
+        },
+        {
+          quote: "बहुत मुश्किल होता है उस इंसान को भुलाना,\nजिसने आपको मुस्कुराने की बेहिसाब वजहें दी हों... 🥀🖤",
+          badge: "✦ अनकहा दर्द ✦",
+          hook: "यादें कभी नहीं मरतीं...",
+          reflection: "कुछ रिश्ते खत्म हो जाते हैं, लेकिन उनके दिए गए अहसास जिंदगी भर हमारे साथ चलते हैं।"
         }
       ],
       mindset_psychology: [
@@ -691,17 +819,47 @@ Comment "LINK" or "INFO" below and I'll send the full guide directly to your DMs
           hook: "शोर मचाने से कद बड़ा नहीं होता...",
           reflection: "शांत रहकर गहरे प्रभाव पैदा करना ही एक महान और सफल इंसान की सबसे बड़ी पहचान होती है।"
         }
+      ],
+      maa_baap_family: [
+        {
+          quote: "पूरी दुनिया में सिर्फ मां-बाप ही ऐसे होते हैं,\nजो खुद खाली पेट सोकर भी अपने बच्चों के सपने पूरे करते हैं... 🥺❤️",
+          badge: "✦ अनमोल मां-बाप ✦",
+          hook: "दुनिया का सबसे निस्वार्थ प्यार...",
+          reflection: "माता-पिता के पसीने की हर बूंद का कर्ज हम जिंदगी भर नहीं चुका सकते। उनकी कद्र उनके रहते करो।"
+        },
+        {
+          quote: "बाप की डांट और मां की दुआ,\nइंसान को कभी जिंदगी की ठोकरों में गिरने नहीं देती... 🕊️✨",
+          badge: "✦ सबसे बड़ा सहारा ✦",
+          hook: "घर के सबसे बड़े बुजुर्ग...",
+          reflection: "जब तक मां-बाप का साया सिर पर है, तब तक दुनिया की कोई भी मुश्किल आपको हरा नहीं सकती।"
+        }
+      ],
+      fake_people: [
+        {
+          quote: "आजकल रिश्ते भी धूप की तरह हो गए हैं,\nजब तक जरूरत होती है लोग तब तक ही आपके साथ खड़े रहते हैं... 🥀",
+          badge: "✦ मतलबी दुनिया ✦",
+          hook: "नकली रिश्तों का असली चेहरा...",
+          reflection: "जब काम निकल जाता है, तो सबसे मीठा बोलने वाले लोग भी आपको पहचानना छोड़ देते हैं।"
+        },
+        {
+          quote: "अगर किसी को परखना हो तो बस इतना देख लो\nकि वो अपने से कमजोर इंसान से किस लहजे में बात करता है... ✍️",
+          badge: "✦ इंसानियत की पहचान ✦",
+          hook: "सच्चे इंसान की सबसे बड़ी निशानी...",
+          reflection: "इंसान का असली चरित्र उसके पद या दौलत से नहीं, बल्कि दूसरों के प्रति उसके सम्मान से झलकता है।"
+        }
       ]
     };
 
-    const selectedCategoryQuotes = quotesDatabase[category] || quotesDatabase['life_reality'];
+    const categoriesList = Object.keys(quotesDatabase);
+    const selectedCategoryKey = quotesDatabase[category] ? category : categoriesList[Math.floor(Math.random() * categoriesList.length)];
+    const selectedCategoryQuotes = quotesDatabase[selectedCategoryKey];
     const chosen = selectedCategoryQuotes[Math.floor(Math.random() * selectedCategoryQuotes.length)];
 
     // 1. Run through AI Critic Evaluation & Rating Loop
-    const criticScore = this.evaluateQuoteCritic(chosen.quote, chosen.hook, category);
+    const criticScore = this.evaluateQuoteCritic(chosen.quote, chosen.hook, selectedCategoryKey);
 
     // 2. Select Matching Trending Emotional Audio Track
-    const audioTrack = audioEngine.getAudioForCategory(category);
+    const audioTrack = audioEngine.getAudioForCategory(selectedCategoryKey);
     let localAudioPath = '';
     try {
       localAudioPath = await audioEngine.ensureAudioFile(audioTrack);
@@ -709,43 +867,47 @@ Comment "LINK" or "INFO" below and I'll send the full guide directly to your DMs
       console.warn(`[AIEngine] Audio fetch warning: ${e.message}`);
     }
 
-    // 3. Render Ultra 4K (2160x2160) Resolution Quote Card Image
+    // 3. Render 9:16 Fullscreen Vertical Cinema Card (Optimal for Instagram Reels Algorithm)
     const cardImage = await this.renderQuoteCardImage(
       chosen.quote,
       authorHandle,
       chosen.badge,
       criticScore.grade,
-      criticScore.overallRating
+      criticScore.overallRating,
+      '9:16'
     );
 
-    // 4. Optionally generate Cinematic 4K Motion Reel Video with Music
+    // 4. Generate Cinematic 9:16 Fullscreen Motion Reel Video with Music
     let videoReelPath = '';
     let videoReelUrl = '';
     if (localAudioPath && cardImage.localPath && fs.existsSync(cardImage.localPath)) {
       try {
-        videoReelPath = await audioEngine.createCinematicQuoteVideo(cardImage.localPath, localAudioPath, 10);
+        videoReelPath = await audioEngine.createCinematicQuoteVideo(cardImage.localPath, localAudioPath, 10, '9:16');
         videoReelUrl = `/media/${path.basename(videoReelPath)}`;
       } catch (err: any) {
         console.warn(`[AIEngine] Motion video rendering fallback: ${err.message}`);
       }
     }
 
+    // Highly Engaging, Relatable Human Caption (Optimized for High Saves, Shares & Comments)
     const caption = `${chosen.quote}
 
-💭 सच कहूं तो:
+💭 कभी ठहर कर सोचा है?
 ${chosen.reflection}
 
 🎵 ऑडियो: ${audioTrack.title} (${audioTrack.mood})
 ━━━━━━━━━━━━━━━━━━━
-📌 अगर यह बात दिल को छुई हो, तो 2 बार Tap करें ❤️
-📩 अपने उस दोस्त के साथ Share करें जिसे आज इसकी जरूरत है।`;
+📌 अगर यह बात सीधे आपके दिल को छुई हो, तो इस रील को Save 🔖 करें ताकि मुश्किल वक्त में याद रहे।
+📩 उस ख़ास दोस्त के साथ Share करें जिसे आज यह सुनने की सबसे ज़्यादा ज़रूरत है।
+💬 क्या आप इस बात से सहमत हैं? अपनी राय नीचे कमेंट्स में ज़रूर बताएं 👇`;
 
     const hashtags = [
-      'EmotionalQuotes',
+      'HindiQuotes',
       'Zindagi',
+      'DeepThoughts',
       'HindiShayari',
       'LifeLessons',
-      'DeepThoughts',
+      'EmotionalReels',
       'SadQuotes',
       'MotivationalQuotes',
       'ReelsIndia',
@@ -760,7 +922,7 @@ ${chosen.reflection}
 
     return {
       trendingTopic: customTopic || chosen.hook,
-      category,
+      category: selectedCategoryKey,
       badgeTag: chosen.badge,
       quoteText: chosen.quote,
       caption,

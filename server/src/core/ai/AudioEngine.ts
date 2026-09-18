@@ -49,15 +49,14 @@ export class AudioEngine {
         category: 'life_reality',
         title: 'Soulful Bansuri & Melancholic Rain Chords',
         artist: 'Trending Soulful Beats',
-        mood: 'Deep Reflection & Life Truth (गहरा अहसास)',
-        // High quality royalty-free ambient piano/flute track
+        mood: 'Deep Reflection & Life Truth (ज़िंदगी का सच)',
         audioUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=sad-soul-112342.mp3',
         durationSeconds: 15
       },
       {
         id: 'track_time_trust',
         category: 'time_trust',
-        title: 'Acoustic Guitar & Soft Lofi Heartbeat',
+        title: 'Sad Acoustic Guitar & Soft Lofi Heartbeat',
         artist: 'Emotional Lofi Vibes',
         mood: 'Patience, Faith & Time (सब्र और भरोसा)',
         audioUrl: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=sad-piano-ambient-122485.mp3',
@@ -68,7 +67,7 @@ export class AudioEngine {
         category: 'silent_hustle',
         title: 'Dark Cinematic Motivational Crescendo',
         artist: 'Hustle Beats & Bass',
-        mood: 'Silent Grind & Self-Made Energy (खामोश मेहनत)',
+        mood: 'Silent Grind & Self-Made Pride (खामोश मेहनत)',
         audioUrl: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=cinematic-time-lapse-115672.mp3',
         durationSeconds: 15
       },
@@ -88,6 +87,24 @@ export class AudioEngine {
         artist: 'Zen Mindset Audio',
         mood: 'Mental Peace & High Vibration (मजबूत सोच)',
         audioUrl: 'https://cdn.pixabay.com/download/audio/2022/02/10/audio_fc84e0fb42.mp3?filename=ambient-piano-calm-10825.mp3',
+        durationSeconds: 15
+      },
+      {
+        id: 'track_maa_baap_family',
+        category: 'maa_baap_family',
+        title: 'Tearful Soulful Flute & Nostalgic Piano',
+        artist: 'Heartfelt Indian Melodies',
+        mood: 'Parents Sacrifice & Pure Love (माँ-बाप का प्यार)',
+        audioUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=sad-soul-112342.mp3',
+        durationSeconds: 15
+      },
+      {
+        id: 'track_fake_people',
+        category: 'fake_people',
+        title: 'Cold Dark Ambient Strings & Reverb',
+        artist: 'Deep Shadow Beats',
+        mood: 'Two-Faced People & Reality of World (मतलबी दुनिया)',
+        audioUrl: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=cinematic-time-lapse-115672.mp3',
         durationSeconds: 15
       }
     ];
@@ -200,12 +217,14 @@ export class AudioEngine {
   }
 
   /**
-   * Create Cinematic 4K / High-Def Motion Reel Video with Music & Ken Burns Breathing Effect
+   * Create Cinematic Motion Reel Video with Music & Ken Burns Breathing Effect
+   * Supports 9:16 Fullscreen Vertical (1080x1920) or 1:1 Square (1080x1080)
    */
   public async createCinematicQuoteVideo(
     imagePath: string,
     audioPath: string,
-    durationSeconds = 10
+    durationSeconds = 10,
+    aspectRatio: '9:16' | '1:1' = '9:16'
   ): Promise<string> {
     const videoFilename = `quote_reel_${Date.now()}_${Math.random().toString(36).substring(2, 6)}.mp4`;
     const outputPath = path.join(appConfig.mediaDir, videoFilename);
@@ -215,20 +234,27 @@ export class AudioEngine {
         return reject(new Error('FFmpeg not available for video rendering'));
       }
 
-      console.log(`[AudioEngine] Rendering Cinematic 4K Motion Reel Video with Music...`);
+      const isVertical = aspectRatio === '9:16';
+      const outWidth = isVertical ? 1080 : 1080;
+      const outHeight = isVertical ? 1920 : 1080;
+
+      console.log(`[AudioEngine] Rendering Cinematic Motion Reel Video (${outWidth}x${outHeight}) with Music...`);
       console.log(`🖼️ Input Image: ${imagePath}`);
       console.log(`🎵 Input Audio: ${audioPath}`);
 
       const totalFrames = durationSeconds * 30;
 
-      // Apply subtle breathing zoom (Ken Burns effect) + crossfade audio
+      // Subtle slow zoom in for gripping visual retention
+      const scaleFilter = isVertical
+        ? `[0:v]scale=1080:1920,zoompan=z='min(zoom+0.0005,1.05)':d=${totalFrames}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1080x1920:fps=30[vzoom]`
+        : `[0:v]scale=1080:1080,zoompan=z='min(zoom+0.0006,1.06)':d=${totalFrames}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1080x1080:fps=30[vzoom]`;
+
       ffmpeg()
         .input(imagePath)
         .loop(durationSeconds)
         .input(audioPath)
         .complexFilter([
-          // Subtle slow zoom in for gripping visual retention
-          `[0:v]scale=2160:2160,zoompan=z='min(zoom+0.0006,1.06)':d=${totalFrames}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=2160x2160:fps=30[vzoom]`,
+          scaleFilter,
           `[1:a]afade=t=in:ss=0:d=1,afade=t=out:st=${durationSeconds - 1.5}:d=1.5[aout]`
         ])
         .outputOptions([
