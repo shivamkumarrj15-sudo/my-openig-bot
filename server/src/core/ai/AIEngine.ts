@@ -1097,6 +1097,282 @@ ${chosen.reflection}
       criticScore
     };
   }
+
+  /**
+   * Render 9:16 Fullscreen Aesthetic Scribble Sketch Reel Image
+   */
+  public async renderScribbleCard(
+    sketchPath: string,
+    topHook: string,
+    hindiSubtext: string,
+    authorHandle = '@shivamkumar12323229'
+  ): Promise<{ localPath: string; url: string }> {
+    const filename = `scribble_reel_card_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.png`;
+    const localPath = path.join(appConfig.mediaDir, filename);
+
+    try {
+      const sketchBase64 = fs.readFileSync(sketchPath).toString('base64');
+      const sketchDataUrl = `data:image/jpeg;base64,${sketchBase64}`;
+
+      const executable = this.detectBrowserExecutable();
+      const browser = await puppeteer.launch({
+        executablePath: executable,
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=1080,1920']
+      });
+
+      const page = await browser.newPage();
+      await page.setViewport({ width: 1080, height: 1920, deviceScaleFactor: 1 });
+
+      const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Kalam:wght@700&family=Cinzel:wght@600;700&family=Outfit:wght@400;600&display=swap" rel="stylesheet">
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body {
+            width: 1080px;
+            height: 1920px;
+            background: #0f1117;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 70px 40px 60px 40px;
+            font-family: 'Outfit', sans-serif;
+            overflow: hidden;
+            position: relative;
+          }
+
+          /* Ambient dark background glow */
+          .bg-glow {
+            position: absolute;
+            width: 900px;
+            height: 900px;
+            background: radial-gradient(circle, rgba(26, 43, 76, 0.4) 0%, rgba(15, 17, 23, 0) 70%);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 0;
+          }
+
+          /* Header Section */
+          .header-box {
+            z-index: 10;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            max-width: 960px;
+          }
+
+          .hook-text {
+            font-family: 'Caveat', cursive;
+            font-size: 58px;
+            font-weight: 700;
+            color: #ffffff;
+            letter-spacing: 1px;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+            line-height: 1.15;
+          }
+
+          .hindi-subtext {
+            font-family: 'Kalam', cursive;
+            font-size: 32px;
+            color: rgba(230, 235, 245, 0.85);
+            line-height: 1.35;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.7);
+          }
+
+          /* Main Sketch Canvas Frame */
+          .sketch-frame {
+            z-index: 10;
+            width: 960px;
+            height: 1440px;
+            border-radius: 28px;
+            overflow: hidden;
+            position: relative;
+            box-shadow: 0 24px 60px rgba(0, 0, 0, 0.75), 0 0 0 2px rgba(255, 255, 255, 0.08);
+            background: #f4ecd8;
+          }
+
+          .sketch-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            display: block;
+          }
+
+          /* Footer Author Watermark */
+          .footer-box {
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 24px;
+            font-weight: 600;
+            letter-spacing: 2px;
+            color: rgba(255, 255, 255, 0.75);
+            background: rgba(255, 255, 255, 0.04);
+            padding: 12px 36px;
+            border-radius: 40px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+          }
+
+          .sparkle {
+            color: #60a5fa;
+            font-size: 18px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="bg-glow"></div>
+
+        <div class="header-box">
+          <div class="hook-text">${topHook}</div>
+          <div class="hindi-subtext">${hindiSubtext}</div>
+        </div>
+
+        <div class="sketch-frame">
+          <img class="sketch-img" src="${sketchDataUrl}" />
+        </div>
+
+        <div class="footer-box">
+          <span class="sparkle">✦</span> ${authorHandle} <span class="sparkle">✦</span>
+        </div>
+      </body>
+      </html>
+      `;
+
+      await page.setContent(html, { waitUntil: 'load' });
+      await new Promise(r => setTimeout(r, 1200));
+      await page.screenshot({ path: localPath, type: 'png', omitBackground: false });
+      await browser.close();
+
+      return { localPath, url: `/media/${filename}` };
+    } catch (err) {
+      return {
+        localPath: sketchPath,
+        url: `/media/${path.basename(sketchPath)}`
+      };
+    }
+  }
+
+  /**
+   * Generate Full 20-Second Scribble Pen Sketch Reel (Viral aaruhi_scribbles style)
+   */
+  public async generateScribbleSketchReel(
+    authorHandle = '@shivamkumar12323229'
+  ): Promise<{
+    success: boolean;
+    videoPath: string;
+    caption: string;
+    hashtags: string[];
+    title: string;
+    criticScore: ICriticScore;
+  }> {
+    const scribblesList = [
+      {
+        sketchFile: 'sketch_stairs_success.jpg',
+        category: 'silent_hustle',
+        topHook: "It's effort every single day.",
+        hindiHeading: "मंजिल जितनी बड़ी होगी, पीछे खींचने वाली रस्सियां भी उतनी ही भारी होंगी...",
+        question: "💭 ईमानदारी से बताएं: इनमें से कौन सी रस्सी आपको सबसे ज़्यादा पीछे खींच रही है?\n1️⃣ Overthinking (ज़रूरत से ज़्यादा सोचना)\n2️⃣ Past Regrets (बीते कल का पछतावा)\n3️⃣ Family Expectations (अपनों की उम्मीदें)\n4️⃣ Fear of Failure (हारने का डर)",
+        reflection: "जब आप सीढ़ियां चढ़ते हैं, तो हर कोई आपको रोकने की कोशिश करेगा—लेकिन आपका एक-एक कदम उन सभी रस्सियों से कहीं ज़्यादा ताकतवर है।"
+      },
+      {
+        sketchFile: 'sketch_mask_healing.jpg',
+        category: 'heartbreak_healing',
+        topHook: "What they see vs What I carry.",
+        hindiHeading: "हर मुस्कुराता हुआ चेहरा खुश नहीं होता, कुछ लोग अंदर ही अंदर खुद को संवार रहे होते हैं...",
+        question: "💭 क्या आप भी कभी-कभी मुस्कुराते हुए मुखौटे के पीछे अपना दर्द छुपाते हैं?",
+        reflection: "दुनिया सिर्फ आपकी मुस्कान देखती है, लेकिन आपका दिल जानता है कि उसने कितनी खामोश लड़ाइयां अकेले जीती हैं। खुद को वक्त दो, टूटे हुए टुकड़े भी एक दिन सोने से ज़्यादा चमकते हैं।"
+      },
+      {
+        sketchFile: 'sketch_parents_bridge.jpg',
+        category: 'maa_baap_family',
+        topHook: "The sacrifices we never saw.",
+        hindiHeading: "माँ-बाप ने अपनी पूरी ज़िंदगी हमारे लिए पुल बना दी, ताकि हम अपनी मंजिलों तक पहुंच सकें...",
+        question: "💭 क्या आप अपने माँ-बाप के उस खामोश त्याग को महसूस कर पाते हैं जो उन्होंने कभी लफ्ज़ों में बयां नहीं किया?",
+        reflection: "माता-पिता की खामोश मेहनत और कंधों का बोझ ही वो नींव है जिस पर हमारी कामयाबी खड़ी होती है। उनके रहते उनकी कद्र करना कभी मत भूलना।"
+      }
+    ];
+
+    const chosen = scribblesList[Math.floor(Math.random() * scribblesList.length)];
+    const sketchFullPath = path.join(appConfig.dataDir, 'scribbles', chosen.sketchFile);
+
+    console.log(`[AIEngine] Selected Scribble Artwork: "${chosen.sketchFile}" (${chosen.topHook})`);
+
+    // 1. Render 9:16 Fullscreen Card with Typography
+    const cardResult = await this.renderScribbleCard(
+      sketchFullPath,
+      chosen.topHook,
+      chosen.hindiHeading,
+      authorHandle
+    );
+
+    // 2. Fetch Matching 20-Second Soundtrack
+    const audioTrack = audioEngine.getAudioForCategory(chosen.category);
+    const audioPath = await audioEngine.ensureAudioFile(audioTrack);
+
+    // 3. Render 20-Second Cinematic Video Reel with Ken Burns Slow Zoom
+    console.log(`[AIEngine] Rendering 20-Second Scribble Motion Reel Video with Music...`);
+    const videoReelPath = await audioEngine.createCinematicQuoteVideo(
+      cardResult.localPath,
+      audioPath,
+      20,
+      '9:16'
+    );
+
+    const criticScore = this.evaluateQuoteCritic(chosen.hindiHeading, chosen.topHook, chosen.category);
+
+    const caption = `✍️ ${chosen.topHook}
+${chosen.hindiHeading}
+
+${chosen.question}
+
+💭 सच कहूं तो:
+${chosen.reflection}
+
+🎵 ऑडियो: ${audioTrack.title} (${audioTrack.mood})
+━━━━━━━━━━━━━━━━━━━
+📌 अगर यह स्केच और बात सीधे आपके दिल को छुई हो, तो इस रील को Save 🔖 करें!
+📩 उस ख़ास दोस्त के साथ Share करें जिसे आज यह देखने की सबसे ज़्यादा ज़रूरत है।
+💬 अपनी राय नीचे कमेंट्स में ज़रूर बताएं 👇`;
+
+    const hashtags = [
+      'ScribbleArt',
+      'LifeLessons',
+      'DeepThoughts',
+      'HindiQuotes',
+      'EmotionalReels',
+      'SketchArt',
+      'ViralReels',
+      'TrendingAudio',
+      'MotivationHindi',
+      'ReelsIndia',
+      'MentalHealth',
+      'SelfGrowth',
+      'InstaArt'
+    ];
+
+    return {
+      success: true,
+      videoPath: videoReelPath,
+      caption,
+      hashtags,
+      title: chosen.topHook,
+      criticScore
+    };
+  }
 }
 
 export const aiEngine = AIEngine.getInstance();

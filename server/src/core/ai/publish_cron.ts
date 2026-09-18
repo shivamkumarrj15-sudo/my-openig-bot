@@ -55,14 +55,20 @@ async function runCron() {
     ? envCategory
     : allCategories[Math.floor(Math.random() * allCategories.length)];
 
-  const postType = (process.env.POST_TYPE?.trim().toLowerCase() || 'auto') as 'simple' | 'reel' | 'ai_video' | 'auto';
+  const postType = (process.env.POST_TYPE?.trim().toLowerCase() || 'scribble') as 'simple' | 'reel' | 'ai_video' | 'scribble' | 'auto';
   console.log(`\n🎯 Selected Category: ${chosenCategory} | Mode: ${postType.toUpperCase()}`);
   const authorHandle = `@${username}`;
 
   let fileToUpload = '';
   let caption = '';
 
-  if (postType === 'ai_video') {
+  if (postType === 'scribble') {
+    console.log('✍️ Generating 20-Second Scribble Pen Sketch Reel (Viral aaruhi_scribbles style)...');
+    const scribbleRes = await aiEngine.generateScribbleSketchReel(authorHandle);
+    fileToUpload = scribbleRes.videoPath;
+    caption = scribbleRes.caption;
+    console.log(`⭐ Critic Rating: ${scribbleRes.criticScore.overallRating}/100 [${scribbleRes.criticScore.grade}]`);
+  } else if (postType === 'ai_video') {
     console.log('🤖 Generating Full AI Video with MoneyPrinter Turbo (Stock Footage + Hindi Voiceover + Subtitles)...');
     const aiVideoRes = await aiEngine.generateMoneyPrinterAIVideo(chosenCategory, undefined, authorHandle);
     fileToUpload = aiVideoRes.videoPath;
