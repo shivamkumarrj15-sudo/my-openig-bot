@@ -877,12 +877,12 @@ Comment "LINK" or "INFO" below and I'll send the full guide directly to your DMs
       '9:16'
     );
 
-    // 4. Generate Cinematic 9:16 Fullscreen Motion Reel Video with Music
+    // 4. Generate Cinematic 9:16 Fullscreen Motion Reel Video with Music (20 Seconds Duration)
     let videoReelPath = '';
     let videoReelUrl = '';
     if (localAudioPath && cardImage.localPath && fs.existsSync(cardImage.localPath)) {
       try {
-        videoReelPath = await audioEngine.createCinematicQuoteVideo(cardImage.localPath, localAudioPath, 10, '9:16');
+        videoReelPath = await audioEngine.createCinematicQuoteVideo(cardImage.localPath, localAudioPath, 20, '9:16');
         videoReelUrl = `/media/${path.basename(videoReelPath)}`;
       } catch (err: any) {
         console.warn(`[AIEngine] Motion video rendering fallback: ${err.message}`);

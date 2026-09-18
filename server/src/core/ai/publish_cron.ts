@@ -41,15 +41,19 @@ async function runCron() {
     updatedAt: new Date().toISOString()
   });
 
-  const hour = new Date().getUTCHours();
-  let chosenCategory = 'life_reality';
-  if (hour >= 4 && hour < 12) {
-    chosenCategory = 'life_reality';
-  } else if (hour >= 12 && hour < 17) {
-    chosenCategory = 'silent_hustle';
-  } else {
-    chosenCategory = 'time_trust';
-  }
+  const allCategories = [
+    'life_reality',
+    'time_trust',
+    'silent_hustle',
+    'heartbreak_healing',
+    'mindset_psychology',
+    'maa_baap_family',
+    'fake_people'
+  ];
+  const envCategory = process.env.CATEGORY?.trim();
+  const chosenCategory = (envCategory && allCategories.includes(envCategory))
+    ? envCategory
+    : allCategories[Math.floor(Math.random() * allCategories.length)];
 
   console.log(`\n🎯 Selected Category: ${chosenCategory}`);
   const authorHandle = `@${username}`;

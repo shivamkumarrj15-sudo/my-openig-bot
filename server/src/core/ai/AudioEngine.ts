@@ -40,7 +40,7 @@ export class AudioEngine {
   }
 
   /**
-   * Library of Curated Trending Emotional Background Audio Tracks
+   * Library of Curated Trending Emotional Background Audio Tracks (20-Second Topic Matched)
    */
   public getTrendingAudioLibrary(): ITrendingAudioTrack[] {
     return [
@@ -51,7 +51,7 @@ export class AudioEngine {
         artist: 'Trending Soulful Beats',
         mood: 'Deep Reflection & Life Truth (ज़िंदगी का सच)',
         audioUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=sad-soul-112342.mp3',
-        durationSeconds: 15
+        durationSeconds: 20
       },
       {
         id: 'track_time_trust',
@@ -60,7 +60,7 @@ export class AudioEngine {
         artist: 'Emotional Lofi Vibes',
         mood: 'Patience, Faith & Time (सब्र और भरोसा)',
         audioUrl: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=sad-piano-ambient-122485.mp3',
-        durationSeconds: 15
+        durationSeconds: 20
       },
       {
         id: 'track_silent_hustle',
@@ -69,7 +69,7 @@ export class AudioEngine {
         artist: 'Hustle Beats & Bass',
         mood: 'Silent Grind & Self-Made Pride (खामोश मेहनत)',
         audioUrl: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=cinematic-time-lapse-115672.mp3',
-        durationSeconds: 15
+        durationSeconds: 20
       },
       {
         id: 'track_heartbreak_healing',
@@ -78,7 +78,7 @@ export class AudioEngine {
         artist: 'Soulful Strings',
         mood: 'Heartbreak, Healing & Solitude (दिल का दर्द और हीलिंग)',
         audioUrl: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=emotional-piano-sad-10708.mp3',
-        durationSeconds: 15
+        durationSeconds: 20
       },
       {
         id: 'track_mindset_psychology',
@@ -87,7 +87,7 @@ export class AudioEngine {
         artist: 'Zen Mindset Audio',
         mood: 'Mental Peace & High Vibration (मजबूत सोच)',
         audioUrl: 'https://cdn.pixabay.com/download/audio/2022/02/10/audio_fc84e0fb42.mp3?filename=ambient-piano-calm-10825.mp3',
-        durationSeconds: 15
+        durationSeconds: 20
       },
       {
         id: 'track_maa_baap_family',
@@ -96,7 +96,7 @@ export class AudioEngine {
         artist: 'Heartfelt Indian Melodies',
         mood: 'Parents Sacrifice & Pure Love (माँ-बाप का प्यार)',
         audioUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=sad-soul-112342.mp3',
-        durationSeconds: 15
+        durationSeconds: 20
       },
       {
         id: 'track_fake_people',
@@ -105,7 +105,7 @@ export class AudioEngine {
         artist: 'Deep Shadow Beats',
         mood: 'Two-Faced People & Reality of World (मतलबी दुनिया)',
         audioUrl: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=cinematic-time-lapse-115672.mp3',
-        durationSeconds: 15
+        durationSeconds: 20
       }
     ];
   }
@@ -141,7 +141,7 @@ export class AudioEngine {
     }
 
     // Fallback: Generate a high quality synthesized ambient tone using FFmpeg lavfi
-    return await this.synthesizeAmbientTone(track.id, localPath, track.durationSeconds);
+    return await this.synthesizeAmbientTone(track.id, localPath, track.durationSeconds || 20);
   }
 
   /**
@@ -184,23 +184,45 @@ export class AudioEngine {
   }
 
   /**
-   * Synthesize Soothing Ambient Meditation Audio using FFmpeg tone synthesis
+   * Synthesize Soothing Ambient Meditation Audio using FFmpeg tone synthesis (20 seconds)
    */
-  private synthesizeAmbientTone(trackId: string, dest: string, duration = 12): Promise<string> {
+  private synthesizeAmbientTone(trackId: string, dest: string, duration = 20): Promise<string> {
     return new Promise((resolve, reject) => {
       if (!ffmpegPath) {
         return reject(new Error('FFmpeg not available'));
       }
 
-      // Generate harmonic chord: 432Hz (Consciousness), 216Hz, and soft pink noise
+      // Mood-specific harmonic resonance frequencies (Solffeggio & Brainwave Harmonics)
+      let freq1 = 432;
+      let freq2 = 216;
+      if (trackId.includes('time_trust')) {
+        freq1 = 396;
+        freq2 = 198;
+      } else if (trackId.includes('silent_hustle')) {
+        freq1 = 144;
+        freq2 = 288;
+      } else if (trackId.includes('heartbreak_healing')) {
+        freq1 = 528;
+        freq2 = 264;
+      } else if (trackId.includes('mindset_psychology')) {
+        freq1 = 639;
+        freq2 = 319;
+      } else if (trackId.includes('maa_baap_family')) {
+        freq1 = 432;
+        freq2 = 288;
+      } else if (trackId.includes('fake_people')) {
+        freq1 = 108;
+        freq2 = 216;
+      }
+
       ffmpeg()
-        .input('eval=val(0):f=432:d=' + duration)
+        .input(`sine=frequency=${freq1}:duration=${duration}`)
         .inputFormat('lavfi')
-        .input('sine=frequency=216:duration=' + duration)
+        .input(`sine=frequency=${freq2}:duration=${duration}`)
         .inputFormat('lavfi')
         .complexFilter([
           '[0:a][1:a]amix=inputs=2:duration=first[aout]',
-          '[aout]afade=t=in:ss=0:d=1.5,afade=t=out:st=' + (duration - 1.5) + ':d=1.5[final]'
+          `[aout]afade=t=in:ss=0:d=1.5,afade=t=out:st=${duration - 2}:d=2[final]`
         ])
         .outputOptions(['-map [final]', '-c:a libmp3lame', '-b:a 192k'])
         .output(dest)
@@ -217,13 +239,13 @@ export class AudioEngine {
   }
 
   /**
-   * Create Cinematic Motion Reel Video with Music & Ken Burns Breathing Effect
+   * Create Cinematic Motion Reel Video with Music & Ken Burns Breathing Effect (20 Seconds Full Duration)
    * Supports 9:16 Fullscreen Vertical (1080x1920) or 1:1 Square (1080x1080)
    */
   public async createCinematicQuoteVideo(
     imagePath: string,
     audioPath: string,
-    durationSeconds = 10,
+    durationSeconds = 20,
     aspectRatio: '9:16' | '1:1' = '9:16'
   ): Promise<string> {
     const videoFilename = `quote_reel_${Date.now()}_${Math.random().toString(36).substring(2, 6)}.mp4`;
@@ -238,16 +260,16 @@ export class AudioEngine {
       const outWidth = isVertical ? 1080 : 1080;
       const outHeight = isVertical ? 1920 : 1080;
 
-      console.log(`[AudioEngine] Rendering Cinematic Motion Reel Video (${outWidth}x${outHeight}) with Music...`);
+      console.log(`[AudioEngine] Rendering 20-Second Cinematic Motion Reel Video (${outWidth}x${outHeight}) with Music...`);
       console.log(`🖼️ Input Image: ${imagePath}`);
       console.log(`🎵 Input Audio: ${audioPath}`);
 
       const totalFrames = durationSeconds * 30;
 
-      // Subtle slow zoom in for gripping visual retention
+      // Subtle slow zoom in for gripping visual retention & easy reading over 20 seconds
       const scaleFilter = isVertical
-        ? `[0:v]scale=1080:1920,zoompan=z='min(zoom+0.0005,1.05)':d=${totalFrames}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1080x1920:fps=30[vzoom]`
-        : `[0:v]scale=1080:1080,zoompan=z='min(zoom+0.0006,1.06)':d=${totalFrames}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1080x1080:fps=30[vzoom]`;
+        ? `[0:v]scale=1080:1920,zoompan=z='min(zoom+0.00025,1.05)':d=${totalFrames}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1080x1920:fps=30[vzoom]`
+        : `[0:v]scale=1080:1080,zoompan=z='min(zoom+0.0003,1.06)':d=${totalFrames}:x='iw/2-(iw/zoom/2)':y='ih/2-(ih/zoom/2)':s=1080x1080:fps=30[vzoom]`;
 
       ffmpeg()
         .input(imagePath)
@@ -255,7 +277,7 @@ export class AudioEngine {
         .input(audioPath)
         .complexFilter([
           scaleFilter,
-          `[1:a]afade=t=in:ss=0:d=1,afade=t=out:st=${durationSeconds - 1.5}:d=1.5[aout]`
+          `[1:a]afade=t=in:ss=0:d=1.5,afade=t=out:st=${durationSeconds - 2}:d=2[aout]`
         ])
         .outputOptions([
           '-map [vzoom]',
@@ -265,11 +287,11 @@ export class AudioEngine {
           '-r 30',
           '-c:a aac',
           '-b:a 192k',
-          '-shortest'
+          `-t ${durationSeconds}`
         ])
         .output(outputPath)
         .on('end', () => {
-          console.log(`🎬 Video Reel generated successfully: ${outputPath}`);
+          console.log(`🎬 20-Second Video Reel generated successfully: ${outputPath}`);
           resolve(outputPath);
         })
         .on('error', (err: any) => {
