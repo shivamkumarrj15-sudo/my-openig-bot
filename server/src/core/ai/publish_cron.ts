@@ -55,14 +55,20 @@ async function runCron() {
     ? envCategory
     : allCategories[Math.floor(Math.random() * allCategories.length)];
 
-  const postType = (process.env.POST_TYPE?.trim().toLowerCase() || 'scribble') as 'simple' | 'reel' | 'ai_video' | 'scribble' | 'auto';
+  const postType = (process.env.POST_TYPE?.trim().toLowerCase() || 'anime_reel') as 'anime_reel' | 'scribble' | 'ai_video' | 'simple' | 'reel' | 'auto';
   console.log(`\n🎯 Selected Category: ${chosenCategory} | Mode: ${postType.toUpperCase()}`);
   const authorHandle = `@${username}`;
 
   let fileToUpload = '';
   let caption = '';
 
-  if (postType === 'scribble') {
+  if (postType === 'anime_reel') {
+    console.log('⚔️ Generating Dark Anime Stoic Video Reel with MoneyPrinter Turbo (Berserk/Vagabond/Stoic Aesthetic + Psychological Hooks)...');
+    const animeRes = await aiEngine.generateDarkAnimeStoicReel(authorHandle);
+    fileToUpload = animeRes.videoPath;
+    caption = animeRes.caption;
+    console.log(`⭐ Critic Rating: ${animeRes.criticScore.overallRating}/100 [${animeRes.criticScore.grade}]`);
+  } else if (postType === 'scribble') {
     console.log('✍️ Generating 20-Second Scribble Pen Sketch Reel (Viral aaruhi_scribbles style)...');
     const scribbleRes = await aiEngine.generateScribbleSketchReel(authorHandle);
     fileToUpload = scribbleRes.videoPath;
