@@ -1281,11 +1281,35 @@ ${chosen.reflection}
   }> {
     const scribblesList = [
       {
-        sketchFile: 'sketch_stairs_success.jpg',
+        sketchFile: 'sketch_gold_miner.jpg',
         category: 'silent_hustle',
+        topHook: "Read this before you quit.",
+        hindiHeading: "हारने वाले और जीतने वाले में सिर्फ 'एक वार' का फर्क होता है...",
+        question: "💭 क्या आप भी कभी किसी चीज को पाने के इतने करीब पहुंचकर थक चुके हैं?\n\n'100' कमेंट करें अगर आप हार नहीं मानेंगे! 🔥",
+        reflection: "जब आप अपनी मंजिल के सबसे करीब होते हैं, तभी सबसे ज़्यादा थकान और अकेलापन महसूस होता है। वो इंसान जो 2 इंच पहले लौट गया, उसने अपनी 99% मेहनत को मिट्टी में मिला दिया। एक आखिरी वार... बस एक वार और लगाइए!"
+      },
+      {
+        sketchFile: 'sketch_candle_burn.jpg',
+        category: 'fake_people',
+        topHook: "Stop lighting yourself on fire to keep others warm.",
+        hindiHeading: "लोग सिर्फ तुम्हारी रोशनी से फायदा उठाते हैं, पिघलते हुए मोम का दर्द कोई नहीं देखता...",
+        question: "💭 क्या आपने भी कभी किसी मतलबी इंसान के लिए खुद को तकलीफ में डाला है?\n\nअपनी राय कमेंट्स में बताएं 👇",
+        reflection: "जिन लोगों के लिए आप खुद को जला रहे हैं, वो आपके बुझते ही दूसरा चिराग ढूंढ लेंगे। खुद की कद्र करना सीखो, क्योंकि दुनिया सिर्फ आपका फायदा उठाना जानती है।"
+      },
+      {
+        sketchFile: 'sketch_hourglass_mind.jpg',
+        category: 'mindset_psychology',
+        topHook: "You are trading your real life for fake scenarios.",
+        hindiHeading: "वक़्त की रेत चुपचाप फिसल रही है, और हम उन ख्यालों में उलझे हैं जिनका कोई वजूद नहीं...",
+        question: "💭 इनमें से कौन सी चीज़ आपके दिमाग में सबसे ज़्यादा चलती है?\n1️⃣ Past Regrets (बीते कल का पछतावा)\n2️⃣ Future Anxiety (आने वाले कल का डर)\n3️⃣ What People Think (लोग क्या कहेंगे)",
+        reflection: "आपके 90% डर और चिंताएं सिर्फ आपके दिमाग का एक वहम हैं। जब तक आप 'कल क्या होगा' सोचते रहेंगे, आपका आज चुपचाप खत्म हो जाएगा। ओवरथिंकिंग छोड़ो और आज में जीना शुरू करो।"
+      },
+      {
+        sketchFile: 'sketch_stairs_success.jpg',
+        category: 'life_reality',
         topHook: "It's effort every single day.",
         hindiHeading: "मंजिल जितनी बड़ी होगी, पीछे खींचने वाली रस्सियां भी उतनी ही भारी होंगी...",
-        question: "💭 ईमानदारी से बताएं: इनमें से कौन सी रस्सी आपको सबसे ज़्यादा पीछे खींच रही है?\n1️⃣ Overthinking (ज़रूरत से ज़्यादा सोचना)\n2️⃣ Past Regrets (बीते कल का पछतावा)\n3️⃣ Family Expectations (अपनों की उम्मीदें)\n4️⃣ Fear of Failure (हारने का डर)",
+        question: "💭 ईमानदारी से बताएं: इनमें से कौन सी रस्सी आपको सबसे ज़्यादा पीछे खींच रही है?\n1️⃣ Overthinking\n2️⃣ Past Regrets\n3️⃣ Family Expectations\n4️⃣ Fear of Failure",
         reflection: "जब आप सीढ़ियां चढ़ते हैं, तो हर कोई आपको रोकने की कोशिश करेगा—लेकिन आपका एक-एक कदम उन सभी रस्सियों से कहीं ज़्यादा ताकतवर है।"
       },
       {

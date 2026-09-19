@@ -479,6 +479,8 @@ export class InstagramWebEngine {
     } catch (err: any) {
       console.error(`[InstagramWebEngine] Error in uploadRealPost:`, err);
       return { success: false, message: `Live upload error: ${err.message}` };
+    } finally {
+      await this.closeBrowser(sessionId);
     }
   }
 
