@@ -1036,21 +1036,38 @@ ${chosen.reflection}
       ]
     };
 
-    const categoriesList = Object.keys(quotesDatabase);
-    const selectedKey = quotesDatabase[category] ? category : categoriesList[Math.floor(Math.random() * categoriesList.length)];
-    const list = quotesDatabase[selectedKey];
-    const chosen = list[Math.floor(Math.random() * list.length)];
+    const psychologicalScripts = [
+      {
+        subject: "3 Dark Psychological Truths",
+        script: "अगर आपकी उम्र 18 से 35 के बीच है, तो इस कड़वे सच को ध्यान से सुनिए। पहला सच: लोग आपकी कद्र नहीं करते, बल्कि अपनी जरूरत की कद्र करते हैं। दूसरा सच: आपकी खामोशी आपका सबसे बड़ा हथियार है। ज्यादा बोलना आपकी कमजोरी दिखाता है। और तीसरा सच: जो इंसान आपको खोने से नहीं डरता, उसके पीछे कभी मत भागिए। इस रील को स्क्रीन टैप करके दोबारा पढ़िए और सेव कर लीजिए।",
+        hook: "3 Dark Psychological Truths no one tells you...",
+        reflection: "दुनिया में वही इंसान सबसे मजबूत और आजाद होता है जो अपनी खुशी के लिए किसी और पर निर्भर नहीं रहता। खामोशी से अपनी ताकत बढ़ाइए।"
+      },
+      {
+        subject: "The Harsh Truth of Human Nature",
+        script: "मनोविज्ञान का सबसे गहरा नियम: जब आप हर किसी के लिए हमेशा उपलब्ध रहते हैं, तो लोग आपको मुफ्त का समझने लगते हैं। थोड़ा पीछे हटना सीखिए, ताकि लोगों को आपकी मौजूदगी और गैर-मौजूदगी दोनों का अहसास हो। इसे सेव करें और हमेशा याद रखें।",
+        hook: "Psychology says: Stop being available for everyone...",
+        reflection: "अपनी इज्जत अपने हाथ में होती है। जब आप अपनी कद्र खुद करना शुरू करते हैं, तभी दुनिया आपको गंभीरता से लेना शुरू करती है।"
+      },
+      {
+        subject: "The Power of Silent Grind",
+        script: "जिंदगी का सबसे बड़ा नियम: अपने अगले कदम के बारे में किसी को मत बताइए। जब तक आपका परिणाम सामने न आ जाए, तब तक अपनी योजनाओं को राज रखिए। शेर कभी शिकार करने से पहले दहाड़ता नहीं है। स्क्रीन टैप करके इस बात को दिमाग में बैठा लीजिए।",
+        hook: "Never announce your moves before they happen...",
+        reflection: "खामोशी में की गई मेहनत की गूंज सबसे ज्यादा दूर तक जाती है। ढिंढोरा पीटने से केवल नजर लगती है, कामयाबी नहीं मिलती।"
+      }
+    ];
 
-    const subject = customTopic || chosen.badge.replace(/[✦\s]/g, '') || 'ज़िंदगी का सच';
-    const script = `${chosen.quote} ${chosen.reflection}`;
+    const chosen = psychologicalScripts[Math.floor(Math.random() * psychologicalScripts.length)];
+    const subject = customTopic || chosen.subject;
+    const script = chosen.script;
 
-    console.log(`[AIEngine] Generating AI Video via MoneyPrinter Turbo for: "${subject}"...`);
+    console.log(`[AIEngine] Generating High-Retention AI Video via MoneyPrinter Turbo: "${subject}"...`);
     const mptResult = await moneyPrinterEngine.generateAIVideo({
       subject,
       script,
       aspectRatio: '9:16',
       language: 'hi-IN',
-      voiceName: 'hi-IN-SwaraNeural-Female',
+      voiceName: 'hi-IN-MadhurNeural-Male',
       bgmType: 'random',
       subtitleEnabled: true
     });
@@ -1059,33 +1076,32 @@ ${chosen.reflection}
       throw new Error(mptResult.message || 'MoneyPrinter Turbo AI Video generation failed');
     }
 
-    const criticScore = this.evaluateQuoteCritic(chosen.quote, chosen.hook, selectedKey);
+    const criticScore = this.evaluateQuoteCritic(chosen.script, chosen.hook, 'mindset_psychology');
 
-    const caption = `${chosen.quote}
+    const caption = `🧠 ${chosen.hook}
+━━━━━━━━━━━━━━━━━━━
+${chosen.script}
 
-💭 कभी ठहर कर सोचा है?
+💭 कड़वा सच:
 ${chosen.reflection}
 
-🎬 AI Video Created with MoneyPrinter Turbo (Real Stock Footage + Hindi Voiceover + Subtitles)
-━━━━━━━━━━━━━━━━━━━
-📌 अगर यह बात सीधे आपके दिल को छुई हो, तो इस वीडियो को Save 🔖 करें!
-📩 उस ख़ास दोस्त के साथ Share करें जिसे आज यह सुनने की सबसे ज़्यादा ज़रूरत है।
-💬 क्या आप इस बात से सहमत हैं? अपनी राय नीचे कमेंट्स में ज़रूर बताएं 👇`;
+📌 अगर यह बात सीधे आपके दिमाग और दिल को छुई हो, तो इस रील को अभी Save 🔖 करें!
+📩 उस दोस्त के साथ Share करें जिसे आज यह सुनने की सबसे ज़्यादा ज़रूरत है।
+💬 इनमें से कौन सी बात आपको सबसे ज्यादा सही लगी? नीचे कमेंट करें 👇`;
 
     const hashtags = [
-      'HindiQuotes',
-      'Zindagi',
-      'DeepThoughts',
-      'HindiShayari',
+      'DarkPsychology',
+      'PsychologicalFacts',
       'LifeLessons',
-      'EmotionalReels',
-      'AIVideo',
-      'MoneyPrinterTurbo',
+      'DeepTruth',
+      'MindsetMatters',
+      'StoicWisdom',
+      'ViralReels',
       'ReelsIndia',
-      'TrendingAudio',
-      'ViralQuotes',
-      'InstaHindi',
-      'ShayariLover'
+      'HumanNature',
+      'MentalStrength',
+      'SelfGrowth',
+      'InstaQuotes'
     ];
 
     return {
@@ -1093,7 +1109,7 @@ ${chosen.reflection}
       videoPath: mptResult.videoPath,
       caption,
       hashtags,
-      quoteText: chosen.quote,
+      quoteText: chosen.script,
       criticScore
     };
   }

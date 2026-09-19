@@ -116,7 +116,7 @@ export class MoneyPrinterEngine {
       console.log(`[MoneyPrinterEngine] Task started successfully! Task ID: ${taskId}`);
 
       // Poll task until finished
-      const taskData = await this.pollTask(taskId, 360000); // Max 6 minutes
+      const taskData = await this.pollTask(taskId, 600000); // Max 10 minutes
       console.log(`[MoneyPrinterEngine] Video rendering completed! State: ${taskData.state}`);
 
       const remoteVideoRelPath = (taskData.videos && taskData.videos.length > 0)
@@ -172,7 +172,7 @@ export class MoneyPrinterEngine {
   /**
    * Poll Task Until Finished
    */
-  private async pollTask(taskId: string, timeoutMs = 360000): Promise<any> {
+  private async pollTask(taskId: string, timeoutMs = 600000): Promise<any> {
     const startTime = Date.now();
     const endpoint = `/api/v1/tasks/${taskId}`;
 
