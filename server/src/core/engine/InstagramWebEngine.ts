@@ -450,26 +450,23 @@ export class InstagramWebEngine {
         return { success: false, message: 'Could not click Share button on Instagram' };
       }
 
-      console.log(`[InstagramWebEngine] Waiting for Instagram to process & share post...`);
+      console.log(`[InstagramWebEngine] Waiting for Instagram video upload & transcode to complete (up to 120s)...`);
       let verifiedShared = false;
-      for (let i = 0; i < 15; i++) {
-        await new Promise(r => setTimeout(r, 2000));
-        const check = await page.evaluate(() => {
+      for (let s = 1; s <= 30; s++) {
+        await new Promise(r => setTimeout(r, 4000));
+        const status = await page.evaluate(() => {
           const text = (document.body.innerText || '').toLowerCase();
-          if (
-            text.includes('your post has been shared') ||
-            text.includes('post shared') ||
-            text.includes('reel shared') ||
-            text.includes('shared')
-          ) {
-            return true;
-          }
-          const checkmark = document.querySelector('svg[aria-label="Animated checkmark"], img[alt="Animated checkmark"]');
-          return !!checkmark;
+          const hasSharedText = text.includes('your reel has been shared') ||
+                                text.includes('your post has been shared') ||
+                                text.includes('post shared') ||
+                                text.includes('reel shared');
+          const checkmark = document.querySelector('svg[aria-label="Animated checkmark"], img[alt="Animated checkmark"], div[aria-label*="checkmark"]');
+          return { hasSharedText, hasCheckmark: !!checkmark };
         });
-        if (check) {
+
+        if (status.hasSharedText || status.hasCheckmark) {
           verifiedShared = true;
-          console.log(`[InstagramWebEngine] Share confirmation detected!`);
+          console.log(`[InstagramWebEngine] 🎉 Verified: Instagram confirmed post is shared!`);
           break;
         }
       }
