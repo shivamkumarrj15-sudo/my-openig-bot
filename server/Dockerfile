@@ -20,20 +20,22 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
-    NODE_ENV=production \
     PORT=3000
 
 WORKDIR /app
 
-# Copy package files and install dependencies
+# Copy package files and install ALL dependencies including typescript/tsc
 COPY package*.json tsconfig.json ./
-RUN npm install
+RUN npm install --include=dev
 
 # Copy source code
 COPY . .
 
-# Build TypeScript
-RUN npm run build
+# Build TypeScript using npx tsc
+RUN npx tsc
+
+# Set production mode after build
+ENV NODE_ENV=production
 
 # Create required runtime directories
 RUN mkdir -p data/media data/sessions data/audio
