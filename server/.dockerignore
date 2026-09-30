@@ -1,0 +1,11 @@
+node_modules
+npm-debug.log
+dist
+.git
+.gitignore
+.env.local
+scratch
+data/sessions/*/browser_profile
+data/media/*.mp4
+data/media/*.png
+data/media/*.jpg

@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: openig-cloud-autoposter
+    env: docker
+    dockerfilePath: Dockerfile
+    dockerContext: .
+    plan: free
+    region: oregon
+    envVars:
+      - key: PORT
+        value: 3000
+      - key: NODE_ENV
+        value: production
+      - key: PUPPETEER_EXECUTABLE_PATH
+        value: /usr/bin/chromium
+      - key: INSTAGRAM_USERNAME
+        value: shivamkumar12323229
+      - key: INSTAGRAM_USER_ID
+        value: 29180762911
+      - key: INSTAGRAM_SESSION_ID
+        sync: false
+      - key: MASTER_API_KEY
+        generateValue: true
