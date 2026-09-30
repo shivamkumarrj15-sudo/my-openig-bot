@@ -1,13 +1,10 @@
 # =======================================================
 # OpenIG Cloud Auto-Poster — Render Production Dockerfile
-# Equipped with Chromium, FFmpeg, Devanagari/Hindi Fonts
 # =======================================================
 
-FROM node:20-bookworm-slim AS builder
+FROM node:20-bookworm-slim
 
-WORKDIR /app
-
-# Install system dependencies for build
+# Install system dependencies, Chromium for Puppeteer, FFmpeg, and Hindi/Devanagari fonts
 RUN apt-get update && apt-get install -y --no-install-recommends \
     chromium \
     ffmpeg \
@@ -21,42 +18,29 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Build Server
-WORKDIR /app/server
-COPY server/package*.json server/tsconfig.json ./
-RUN npm install
-COPY server/ ./
-RUN npm run build
-
-# Final Runtime
-FROM node:20-bookworm-slim AS runner
-
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    chromium \
-    ffmpeg \
-    fonts-noto-color-emoji \
-    fonts-noto-core \
-    fonts-noto-cjk \
-    fonts-indic \
-    fonts-dejavu-core \
-    ca-certificates \
-    curl \
-    && rm -rf /var/lib/apt/lists/*
-
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
     NODE_ENV=production \
     PORT=3000
 
+# Set working directory to server
 WORKDIR /app/server
 
-COPY server/package*.json ./
+# Copy server package files and install dependencies
+COPY server/package*.json server/tsconfig.json ./
 RUN npm install
 
-COPY --from=builder /app/server/dist ./dist
-COPY --from=builder /app/server/data ./data
-COPY server/src ./src
+# Copy server source files
+COPY server/ ./
 
+# Build TypeScript to dist/
+RUN npm run build
+
+# Create data directories if not existing
+RUN mkdir -p data/media data/sessions data/audio
+
+# Expose port
 EXPOSE 3000
 
+# Start server
 CMD ["node", "dist/index.js"]

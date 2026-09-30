@@ -1,11 +1,10 @@
 # =======================================================
-# OpenIG Cloud Auto-Poster — Render Production Dockerfile
-# Equipped with Chromium, FFmpeg, Devanagari/Hindi Fonts
+# OpenIG Cloud Auto-Poster — Render Server Dockerfile
 # =======================================================
 
 FROM node:20-bookworm-slim
 
-# Install system dependencies, Chromium for Puppeteer, FFmpeg, and fonts
+# Install system dependencies, Chromium for Puppeteer, FFmpeg, and Hindi/Devanagari fonts
 RUN apt-get update && apt-get install -y --no-install-recommends \
     chromium \
     ffmpeg \
@@ -19,29 +18,26 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Environment settings for headless browser automation & cloud execution
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true \
     PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium \
     NODE_ENV=production \
     PORT=3000
 
-# Set working directory
 WORKDIR /app
 
-# Copy package files first for fast layer caching
+# Copy package files and install dependencies
 COPY package*.json tsconfig.json ./
-
-# Install all dependencies
 RUN npm install
 
-# Copy source code and config
+# Copy source code
 COPY . .
 
-# Build TypeScript to dist/
+# Build TypeScript
 RUN npm run build
 
-# Expose web service port
+# Create required runtime directories
+RUN mkdir -p data/media data/sessions data/audio
+
 EXPOSE 3000
 
-# Start OpenIG Server with 24/7 AI Auto-Pilot
-CMD ["npm", "start"]
+CMD ["node", "dist/index.js"]
