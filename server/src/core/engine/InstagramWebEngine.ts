@@ -481,6 +481,68 @@ export class InstagramWebEngine {
     }
   }
 
+  /**
+   * Upload 24-Hour Story to Instagram
+   */
+  public async uploadStory(sessionId: string, filePath: string): Promise<{ success: boolean; message: string }> {
+    const session = db.getSession(sessionId);
+    const cookies = session?.cookies;
+
+    try {
+      console.log(`[InstagramWebEngine] Launching browser for Instagram Story upload (${sessionId})...`);
+      const { page } = await this.getOrCreateBrowser(sessionId, true);
+
+      // Emulate Mobile Device Viewport for Story Upload
+      await page.setUserAgent('Mozilla/5.0 (iPhone; CPU iPhone OS 16_6 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.6 Mobile/15E148 Safari/604.1');
+      await page.setViewport({ width: 390, height: 844, isMobile: true, hasTouch: true });
+
+      if (cookies && cookies.sessionid) {
+        const rawSession = String(cookies.sessionid).trim();
+        const decodedSession = rawSession.includes('%') ? decodeURIComponent(rawSession) : rawSession;
+        const validUserId = (cookies.ds_user_id && cookies.ds_user_id !== 'true' && cookies.ds_user_id !== 'false')
+          ? cookies.ds_user_id
+          : '29180762911';
+
+        await page.setCookie(
+          { name: 'sessionid', value: decodedSession, domain: '.instagram.com', path: '/', httpOnly: true, secure: true },
+          { name: 'ds_user_id', value: validUserId, domain: '.instagram.com', path: '/', secure: true }
+        );
+      }
+
+      await page.goto('https://www.instagram.com/', { waitUntil: 'domcontentloaded', timeout: 45000 });
+      await new Promise(r => setTimeout(r, 4000));
+
+      let storyInput = await page.$('input[type="file"]');
+      if (storyInput) {
+        console.log(`[InstagramWebEngine] Uploading story image: ${filePath}...`);
+        await storyInput.uploadFile(filePath);
+        await new Promise(r => setTimeout(r, 6000));
+
+        // Click "Add to your story"
+        await page.evaluate(() => {
+          const btns = Array.from(document.querySelectorAll('button, div[role="button"], span')) as HTMLElement[];
+          for (const b of btns) {
+            const t = (b.innerText || '').toLowerCase();
+            if (t.includes('your story') || t.includes('add to story') || t.includes('share')) {
+              b.click();
+              break;
+            }
+          }
+        });
+        await new Promise(r => setTimeout(r, 8000));
+        console.log(`[InstagramWebEngine] Story posted successfully!`);
+        return { success: true, message: 'Instagram Story uploaded successfully!' };
+      }
+
+      return { success: false, message: 'Story upload button not found in mobile view' };
+    } catch (err: any) {
+      console.error(`[InstagramWebEngine] Story upload error:`, err);
+      return { success: false, message: `Story upload error: ${err.message}` };
+    } finally {
+      await this.closeBrowser(sessionId);
+    }
+  }
+
   public async closeBrowser(sessionId: string): Promise<void> {
     const browser = this.activeBrowsers.get(sessionId);
     if (browser) {

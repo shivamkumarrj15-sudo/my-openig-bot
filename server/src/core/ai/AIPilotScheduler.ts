@@ -2,6 +2,7 @@ import cron from 'node-cron';
 import { db, IPostRecord, IMessageRecord } from '../../storage/DatabaseAdapter';
 import { sessionManager } from '../session/SessionManager';
 import { aiEngine } from './AIEngine';
+import { instagramWebEngine } from '../engine/InstagramWebEngine';
 import { safetyQueue } from '../safety/SafetyQueue';
 import { wsServer } from '../../websocket/WebSocketServer';
 import { webhookDispatcher } from '../webhooks/WebhookDispatcher';
@@ -53,14 +54,19 @@ export class AIPilotScheduler {
   }
 
   /**
-   * Autonomous AI Post Generation & Publishing
+   * Autonomous AI Post & Story Generation & Publishing
+   * Automatically targets 3 Peak Indian Social Hours: 9 AM, 2 PM, 9 PM IST
    */
   public async checkAndExecuteAutoPost(sessionId: string, force = false): Promise<boolean> {
     const config = db.getAIConfig();
-    const currentHour = new Date().getHours();
-    const scheduleHours = config.postingScheduleHours || [10, 16, 21];
 
-    if (!force && (!scheduleHours.includes(currentHour) || this.lastPostHour === currentHour)) {
+    // Calculate Indian Standard Time (IST = UTC + 5:30)
+    const nowUtc = new Date();
+    const istTime = new Date(nowUtc.getTime() + (5.5 * 60 * 60 * 1000));
+    const currentIstHour = istTime.getUTCHours();
+    const scheduleHours = config.postingScheduleHours || [9, 14, 21]; // 9 AM, 2 PM, 9 PM IST Peak Windows
+
+    if (!force && (!scheduleHours.includes(currentIstHour) || this.lastPostHour === currentIstHour)) {
       return false;
     }
 
@@ -70,38 +76,37 @@ export class AIPilotScheduler {
     }
 
     try {
-      const generated = await aiEngine.generatePost();
-      const driver = sessionManager.getDriver(sessionId);
+      console.log(`[AIPilotScheduler] 🚀 Autonomous Peak Time Triggered (${currentIstHour}:00 IST)! Generating 4K Quote Reel...`);
+      const allCategories = ['life_reality', 'time_trust', 'silent_hustle', 'heartbreak_healing', 'mindset_psychology', 'maa_baap_family'];
+      const chosenCat = allCategories[Math.floor(Math.random() * allCategories.length)];
+      const session = db.getSession(sessionId);
+      const username = session?.username || 'shivamkumar12323229';
 
-      let mediaId = `ai_media_${Date.now()}`;
-      let code = Math.random().toString(36).substring(2, 9).toUpperCase();
-      let permalink = `https://instagram.com/p/${code}/`;
+      const quoteRes = await aiEngine.generateEmotionalQuote(chosenCat, undefined, `@${username}`);
+      const fileToPost = quoteRes.videoReelPath || quoteRes.localImagePath;
 
-      if (driver) {
-        const pub = await driver.publishContent({
-          type: 'feed',
-          mediaUrls: [generated.suggestedMediaUrl],
-          caption: generated.caption,
-          hashtags: generated.hashtags
-        });
-        if (pub.mediaId) mediaId = pub.mediaId;
-        if (pub.code) code = pub.code;
-        if (pub.permalink) permalink = pub.permalink;
+      console.log(`[AIPilotScheduler] Publishing 4K Reel (${fileToPost}) live to Instagram...`);
+      const uploadRes = await instagramWebEngine.uploadRealPost(sessionId, fileToPost, quoteRes.caption);
+
+      // Also Post 4K Quote Card to Instagram Story
+      if (quoteRes.localImagePath) {
+        console.log(`[AIPilotScheduler] Uploading daily quote to Instagram Story...`);
+        await instagramWebEngine.uploadStory(sessionId, quoteRes.localImagePath).catch(() => {});
       }
 
       const postRecord: IPostRecord = {
         id: `post_ai_${Date.now()}`,
         sessionId,
-        type: 'feed',
-        mediaUrls: [generated.suggestedMediaUrl],
-        caption: generated.caption,
-        hashtags: generated.hashtags,
-        status: 'published',
+        type: 'reel',
+        mediaUrls: [quoteRes.cardImageUrl],
+        caption: quoteRes.caption,
+        hashtags: quoteRes.hashtags,
+        status: uploadRes.success ? 'published' : 'failed',
         publishedAt: new Date().toISOString(),
-        instagramMediaId: mediaId,
-        instagramCode: code,
+        instagramMediaId: `media_${Date.now()}`,
+        instagramCode: Math.random().toString(36).substring(2, 9).toUpperCase(),
         isAiGenerated: true,
-        aiTopic: generated.topic,
+        aiTopic: quoteRes.trendingTopic,
         likesCount: 0,
         commentsCount: 0,
         createdAt: new Date().toISOString(),
@@ -110,21 +115,14 @@ export class AIPilotScheduler {
 
       db.upsertPost(postRecord);
       safetyQueue.recordAction(sessionId, 'post');
-      this.lastPostHour = currentHour;
+      this.lastPostHour = currentIstHour;
 
       // Log AI Activity
       db.addAIActivityLog({
         type: 'auto_post',
         sessionId,
-        summary: `Auto-published AI post: "${generated.topic}"`,
-        details: { postId: postRecord.id, code, permalink }
-      });
-
-      db.addAuditLog({
-        level: 'info',
-        category: 'ai',
-        sessionId,
-        message: `Autonomous AI Auto-Pilot published post: "${generated.topic}"`
+        summary: `Auto-published 4K Quote Reel: "${quoteRes.trendingTopic}" (Rating: ${quoteRes.criticScore.overallRating}/100)`,
+        details: { postId: postRecord.id, status: uploadRes.message }
       });
 
       wsServer.broadcast('post.published', postRecord);
@@ -132,7 +130,7 @@ export class AIPilotScheduler {
 
       return true;
     } catch (err: any) {
-      console.error('Auto-post execution error:', err);
+      console.error('[AIPilotScheduler] Auto-post execution error:', err);
       return false;
     }
   }

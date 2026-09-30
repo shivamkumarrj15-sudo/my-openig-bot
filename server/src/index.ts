@@ -45,24 +45,34 @@ const dashboardDist = path.resolve(__dirname, '../../dashboard/dist');
 if (fs.existsSync(dashboardDist)) {
   app.use(express.static(dashboardDist));
   app.get('*', (req, res, next) => {
-    if (req.path.startsWith('/api') || req.path.startsWith('/ws') || req.path.startsWith('/media')) {
+    if (req.path.startsWith('/api') || req.path.startsWith('/ws') || req.path.startsWith('/media') || req.path.startsWith('/health') || req.path.startsWith('/ping')) {
       return next();
     }
     res.sendFile(path.join(dashboardDist, 'index.html'));
   });
-} else {
-  // Base Redirect & Health info
-  app.get('/', (req, res) => {
-    res.json({
-      name: config.appName,
-      version: config.version,
-      status: 'online',
-      docs: '/api/docs',
-      api: '/api/v1',
-      ws: '/ws'
-    });
-  });
 }
+
+// Keep-Alive & Monitoring Health Endpoints (UptimeRobot / Cron-job.org)
+app.get('/health', (req, res) => {
+  res.status(200).json({ status: 'ok', uptime: process.uptime(), timestamp: new Date().toISOString() });
+});
+
+app.get('/ping', (req, res) => {
+  res.status(200).send('pong');
+});
+
+// Base Redirect & Info
+app.get('/', (req, res) => {
+  res.json({
+    name: config.appName,
+    version: config.version,
+    status: 'online',
+    docs: '/api/docs',
+    api: '/api/v1',
+    ws: '/ws',
+    health: '/health'
+  });
+});
 
 // Global Error Handler
 app.use(errorHandler);
