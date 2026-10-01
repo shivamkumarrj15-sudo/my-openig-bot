@@ -1000,12 +1000,37 @@ Comment "LINK" or "INFO" below and I'll send the full guide directly to your DMs
           hook: "मां-बाप का प्यार...",
           reflection: "माता-पिता के पसीने की हर बूंद का कर्ज हम जिंदगी भर नहीं चुका सकते। उनकी कद्र हमेशा करो।"
         }
+      ],
+      gandhi_jayanti: [
+        {
+          quote: "कमजोर कभी माफ नहीं कर सकता,\nमाफ करना ताकतवर इंसान की निशानी है... 🕊️🇮🇳",
+          badge: "✦ 2 अक्टूबर गांधी जयंती ✦",
+          hook: "सत्य और अहिंसा...",
+          reflection: "क्रोध और बदले की भावना से केवल विनाश होता है। शांति, क्षमा और स्वाभिमान ही एक महान आत्मा की सबसे बड़ी पहचान है।"
+        },
+        {
+          quote: "खुद वो बदलाव बनिए जनाब,\nजो आप पूरी दुनिया में देखना चाहते हैं... 🕊️✨",
+          badge: "✦ 2 अक्टूबर विशेष ✦",
+          hook: "बदलाव खुद से शुरू होता है...",
+          reflection: "दुनिया को बदलने की शुरुआत खुद के विचारों और कर्मों को संवारने से होती है। बापू के विचार आज भी अमर हैं।"
+        },
+        {
+          quote: "सत्य और अहिंसा ही वो हथियार हैं,\nजो बिना किसी शोर के पूरी दुनिया को झुका सकते हैं... 🕊️🇮🇳",
+          badge: "✦ गांधी जयंती ✦",
+          hook: "सत्य की सबसे बड़ी ताकत...",
+          reflection: "झूठ कितना भी ताकतवर दिखे, अंत में जीत हमेशा सत्य, न्याय और धैर्य की ही होती है।"
+        }
       ]
     };
 
     const categoriesList = Object.keys(quotesDatabase);
-    const selectedCategoryKey = quotesDatabase[category] ? category : categoriesList[Math.floor(Math.random() * categoriesList.length)];
-    const selectedCategoryQuotes = quotesDatabase[selectedCategoryKey];
+    // Automatic Date Check: Prioritize Gandhi Jayanti on 2nd October
+    const nowUtc = new Date();
+    const istTime = new Date(nowUtc.getTime() + (5.5 * 60 * 60 * 1000));
+    const isGandhiJayantiDay = (istTime.getUTCMonth() === 9 && istTime.getUTCDate() === 2) || category === 'gandhi_jayanti';
+
+    const selectedCategoryKey = isGandhiJayantiDay ? 'gandhi_jayanti' : (quotesDatabase[category] ? category : categoriesList[Math.floor(Math.random() * categoriesList.length)]);
+    const selectedCategoryQuotes = quotesDatabase[selectedCategoryKey] || quotesDatabase['life_reality'];
     const chosen = selectedCategoryQuotes[Math.floor(Math.random() * selectedCategoryQuotes.length)];
 
     // 1. Run through AI Critic Evaluation & Rating Loop
