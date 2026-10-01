@@ -1,6 +1,10 @@
 node_modules/
 dist/
-data/
+**/sessions/
+**/media/*.mp4
+**/media/*.png
+**/media/*.jpg
+**/database.json
 .env
 *.log
 .DS_Store

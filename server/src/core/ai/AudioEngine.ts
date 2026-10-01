@@ -45,7 +45,34 @@ export class AudioEngine {
   public getTrendingAudioLibrary(): ITrendingAudioTrack[] {
     return [
       {
-        id: 'track_life_reality',
+        id: 'track_anime_shinkai_piano',
+        category: 'anime_aesthetic',
+        title: 'Shinkai Twilight Piano & Shooting Star Melodies',
+        artist: 'Anime Chill Piano',
+        mood: 'Nostalgic, Dreamy & Anime Aesthetic (एनीमे सुकून)',
+        audioUrl: 'https://cdn.pixabay.com/download/audio/2022/11/06/audio_c93a027961.mp3?filename=piano-moment-124976.mp3',
+        durationSeconds: 20
+      },
+      {
+        id: 'track_anime_lofi_rain',
+        category: 'anime_aesthetic',
+        title: 'Midnight Lofi Rain & Vinyl Warmth',
+        artist: 'Tokyo Lofi Station',
+        mood: 'Chill Lofi & Deep Thoughts (शांत रात और बारिश)',
+        audioUrl: 'https://cdn.pixabay.com/download/audio/2022/05/16/audio_db6591201e.mp3?filename=lofi-study-112191.mp3',
+        durationSeconds: 20
+      },
+      {
+        id: 'track_stoic_warrior_bass',
+        category: 'silent_hustle',
+        title: 'Dark Stoic Warrior & Deep Cinematic Resonance',
+        artist: 'Vagabond Dark Soundscapes',
+        mood: 'Dark Motivation & Self Discipline (योद्धा का संकल्प)',
+        audioUrl: 'https://cdn.pixabay.com/download/audio/2022/10/25/audio_245e54ae8a.mp3?filename=dark-ambient-124741.mp3',
+        durationSeconds: 20
+      },
+      {
+        id: 'track_life_reality_bansuri',
         category: 'life_reality',
         title: 'Soulful Bansuri & Melancholic Rain Chords',
         artist: 'Trending Soulful Beats',
@@ -54,16 +81,16 @@ export class AudioEngine {
         durationSeconds: 20
       },
       {
-        id: 'track_time_trust',
+        id: 'track_time_trust_acoustic',
         category: 'time_trust',
-        title: 'Sad Acoustic Guitar & Soft Lofi Heartbeat',
-        artist: 'Emotional Lofi Vibes',
+        title: 'Sad Acoustic Guitar & Soft Ambient Heartbeat',
+        artist: 'Emotional Acoustic Strings',
         mood: 'Patience, Faith & Time (सब्र और भरोसा)',
         audioUrl: 'https://cdn.pixabay.com/download/audio/2022/10/14/audio_9939f792cb.mp3?filename=sad-piano-ambient-122485.mp3',
         durationSeconds: 20
       },
       {
-        id: 'track_silent_hustle',
+        id: 'track_silent_hustle_epic',
         category: 'silent_hustle',
         title: 'Dark Cinematic Motivational Crescendo',
         artist: 'Hustle Beats & Bass',
@@ -72,7 +99,7 @@ export class AudioEngine {
         durationSeconds: 20
       },
       {
-        id: 'track_heartbreak_healing',
+        id: 'track_heartbreak_violin',
         category: 'heartbreak_healing',
         title: 'Heart-touching Violin & Deep Cello Melody',
         artist: 'Soulful Strings',
@@ -81,7 +108,7 @@ export class AudioEngine {
         durationSeconds: 20
       },
       {
-        id: 'track_mindset_psychology',
+        id: 'track_mindset_zen_synth',
         category: 'mindset_psychology',
         title: 'Calm Wisdom & Ethereal Synth Harmony',
         artist: 'Zen Mindset Audio',
@@ -90,33 +117,37 @@ export class AudioEngine {
         durationSeconds: 20
       },
       {
-        id: 'track_maa_baap_family',
+        id: 'track_sad_nostalgia_flute',
         category: 'maa_baap_family',
-        title: 'Tearful Soulful Flute & Nostalgic Piano',
-        artist: 'Heartfelt Indian Melodies',
+        title: 'Tearful Soulful Flute & Emotional Chords',
+        artist: 'Indian Classical Moods',
         mood: 'Parents Sacrifice & Pure Love (माँ-बाप का प्यार)',
-        audioUrl: 'https://cdn.pixabay.com/download/audio/2022/05/27/audio_1808fbf07a.mp3?filename=sad-soul-112342.mp3',
+        audioUrl: 'https://cdn.pixabay.com/download/audio/2021/08/04/audio_12b0c7443c.mp3?filename=sad-moment-9173.mp3',
         durationSeconds: 20
       },
       {
-        id: 'track_fake_people',
+        id: 'track_alone_dark_shadow',
         category: 'fake_people',
-        title: 'Cold Dark Ambient Strings & Reverb',
+        title: 'Cold Dark Ambient Strings & Deep Reverb',
         artist: 'Deep Shadow Beats',
         mood: 'Two-Faced People & Reality of World (मतलबी दुनिया)',
-        audioUrl: 'https://cdn.pixabay.com/download/audio/2022/01/18/audio_d0a13f69d2.mp3?filename=cinematic-time-lapse-115672.mp3',
+        audioUrl: 'https://cdn.pixabay.com/download/audio/2022/03/09/audio_c8b9393fa1.mp3?filename=deep-sad-piano-10526.mp3',
         durationSeconds: 20
       }
     ];
   }
 
   /**
-   * Get Best Trending Audio for a Specific Quote Category
+   * Get Best Trending Audio for a Specific Quote Category (Randomized for Variety)
    */
   public getAudioForCategory(category: string): ITrendingAudioTrack {
     const library = this.getTrendingAudioLibrary();
-    const match = library.find(t => t.category === category);
-    return match || library[0];
+    const matches = library.filter(t => t.category === category);
+    if (matches.length > 0) {
+      return matches[Math.floor(Math.random() * matches.length)];
+    }
+    // Random track from entire library for maximum variety
+    return library[Math.floor(Math.random() * library.length)];
   }
 
   /**

@@ -665,6 +665,232 @@ Comment "LINK" or "INFO" below and I'll send the full guide directly to your DMs
   }
 
   /**
+   * Render Ultra Aesthetic Anime / Wallpaper Quote Card (9:16 Fullscreen Vertical Cinema)
+   */
+  public async renderAnimeQuoteCard(
+    animeImagePath: string,
+    quoteText: string,
+    authorHandle: string = '@shivamkumar12323229',
+    badgeTag: string = '✦ ज़िन्दगी का सच ✦'
+  ): Promise<{ localPath: string; url: string }> {
+    const filename = `anime_quote_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.png`;
+    const localPath = path.join(appConfig.mediaDir, filename);
+
+    if (!fs.existsSync(appConfig.mediaDir)) {
+      fs.mkdirSync(appConfig.mediaDir, { recursive: true });
+    }
+
+    try {
+      const imgBase64 = fs.readFileSync(animeImagePath).toString('base64');
+      const imgDataUrl = `data:image/jpeg;base64,${imgBase64}`;
+
+      const executable = this.detectBrowserExecutable();
+      const browser = await puppeteer.launch({
+        executablePath: executable,
+        headless: true,
+        args: [
+          '--no-sandbox',
+          '--disable-setuid-sandbox',
+          '--disable-blink-features=AutomationControlled',
+          '--force-device-scale-factor=2',
+          '--high-dpi-support=1'
+        ]
+      });
+
+      const page = await browser.newPage();
+      await page.setViewport({ width: 1080, height: 1920, deviceScaleFactor: 2 });
+
+      const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Outfit:wght@600;700;800;900&family=Noto+Serif+Devanagari:wght@700;800;900&family=Rozha+One&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+        <style>
+          * { box-sizing: border-box; margin: 0; padding: 0; }
+          body {
+            width: 1080px;
+            height: 1920px;
+            position: relative;
+            overflow: hidden;
+            background: #000000;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            align-items: center;
+            padding: 85px 50px 75px 50px;
+            font-family: 'Noto Serif Devanagari', 'Rozha One', serif;
+          }
+
+          /* Fullscreen Anime Artwork */
+          .bg-anime {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('${imgDataUrl}');
+            background-size: cover;
+            background-position: center;
+            z-index: 1;
+          }
+
+          /* Cinematic Gradient Darkness Overlays for Crisp Text Legibility */
+          .bg-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, 
+              rgba(0,0,0,0.65) 0%, 
+              rgba(0,0,0,0.2) 30%, 
+              rgba(0,0,0,0.3) 55%, 
+              rgba(0,0,0,0.88) 80%, 
+              #030303 100%);
+            z-index: 2;
+          }
+
+          /* Ambient Glow */
+          .ambient-glow {
+            position: absolute;
+            bottom: 240px;
+            width: 800px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(251, 191, 36, 0.18) 0%, transparent 70%);
+            filter: blur(80px);
+            z-index: 3;
+            pointer-events: none;
+          }
+
+          /* Header Hook */
+          .header-box {
+            position: relative;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+          }
+
+          .hook-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 12px 34px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1.5px solid rgba(251, 191, 36, 0.5);
+            color: #fbbf24;
+            font-family: 'Outfit', sans-serif;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.6), 0 0 20px rgba(251, 191, 36, 0.25);
+          }
+
+          /* Main Quote Glass Box - Short, Punchy, Crisp */
+          .quote-glass-box {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 980px;
+            margin-bottom: 25px;
+            padding: 45px 40px;
+            background: rgba(10, 10, 15, 0.75);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-radius: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            box-shadow: 0 30px 70px rgba(0,0,0,0.85), inset 0 1px 0 rgba(255,255,255,0.2);
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+          }
+
+          .quote-symbol {
+            font-family: 'Cinzel', serif;
+            font-size: 80px;
+            line-height: 0.6;
+            color: #fbbf24;
+            margin-bottom: 25px;
+            text-shadow: 0 0 30px rgba(251, 191, 36, 0.6);
+          }
+
+          .quote-text {
+            font-size: 56px;
+            font-weight: 800;
+            line-height: 1.55;
+            letter-spacing: 0.5px;
+            color: #ffffff;
+            text-shadow: 0 4px 25px rgba(0, 0, 0, 0.95);
+          }
+
+          /* Author Footer Signature */
+          .footer-author {
+            position: relative;
+            z-index: 10;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 34px;
+            border-radius: 999px;
+            background: rgba(0, 0, 0, 0.65);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            color: rgba(255, 255, 255, 0.9);
+            font-family: 'Outfit', sans-serif;
+            font-size: 22px;
+            font-weight: 600;
+            letter-spacing: 2px;
+          }
+
+          .dot-sparkle {
+            color: #fbbf24;
+            font-size: 16px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="bg-anime"></div>
+        <div class="bg-overlay"></div>
+        <div class="ambient-glow"></div>
+
+        <div class="header-box">
+          <div class="hook-badge">${badgeTag}</div>
+        </div>
+
+        <div class="quote-glass-box">
+          <div class="quote-symbol">“</div>
+          <div class="quote-text">
+            ${quoteText.replace(/\n/g, '<br/>')}
+          </div>
+        </div>
+
+        <div class="footer-author">
+          <span class="dot-sparkle">✦</span> ${authorHandle} <span class="dot-sparkle">✦</span>
+        </div>
+      </body>
+      </html>
+      `;
+
+      await page.setContent(html, { waitUntil: 'load' });
+      await new Promise(r => setTimeout(r, 1200));
+      await page.screenshot({ path: localPath, type: 'png', omitBackground: false });
+      await browser.close();
+
+      return { localPath, url: `/media/${filename}` };
+    } catch (err: any) {
+      console.warn(`[AIEngine] renderAnimeQuoteCard fallback: ${err.message}`);
+      return await this.renderQuoteCardImage(quoteText, authorHandle, badgeTag, 'S+ Ultra-Masterpiece', 98.5, '9:16');
+    }
+  }
+
+  /**
    * Autonomous Emotional Quotes Post Generator with AI Critic Rating
    */
   public async generateEmotionalQuote(
@@ -675,178 +901,104 @@ Comment "LINK" or "INFO" below and I'll send the full guide directly to your DMs
     const quotesDatabase: Record<string, Array<{ quote: string; badge: string; hook: string; reflection: string }>> = {
       life_reality: [
         {
-          quote: "वक्त और किस्मत पर कभी घमंड मत करना,\nक्योंकि सुबह उनकी भी होती है जिनके दिन खराब होते हैं... 🥀⏳",
+          quote: "पहचान हमेशा अपने दम पर बनाओ,\nकिसी के नाम के सहारे नहीं... 🦅",
           badge: "✦ ज़िन्दगी का सच ✦",
-          hook: "जिंदगी का सबसे बड़ा कड़वा सच...",
-          reflection: "हम अक्सर उन चीजों के पीछे भागते हैं जो हमारे हाथ में नहीं होतीं, और उस वक्त को भूल जाते हैं जो हमें संवार सकता है।"
+          hook: "पहचान अपने दम पर बनाओ...",
+          reflection: "दूसरों की चमक में खड़े होकर खुद को रोशन समझना सबसे बड़ा भ्रम है। अपनी राह खुद चुनो।"
         },
         {
-          quote: "कुछ बातें तब समझ आती हैं,\nजब हम उस दौर से खुद अकेले गुज़रते हैं... 🖤",
-          badge: "✦ ज़िन्दगी का सबक ✦",
-          hook: "अनुभव उम्र से नहीं, हालातों से आता है...",
-          reflection: "दुनिया की कोई भी किताब वो सबक नहीं सिखा सकती, जो वक्त और ठोकरें एक पल में सिखा देती हैं।"
+          quote: "वक्त सबको अपनी औकात दिखाता है,\nबस थोड़ा सब्र रखिए जनाब... ⏳",
+          badge: "✦ वक्त की अदालत ✦",
+          hook: "वक्त सबका आता है...",
+          reflection: "ऊपर वाले की लाठी में आवाज नहीं होती, लेकिन जब इंसाफ होता है तो हर घमंड टूट जाता है।"
         },
         {
-          quote: "चेहरे पर मुस्कान और दिल में दर्द छुपाना,\nजिंदगी जीने का सबसे बड़ा और खूबसूरत हुनर है... ✍️",
-          badge: "✦ दिल की गहराई ✦",
-          hook: "सबको खुश रखना मुमकिन नहीं होता...",
-          reflection: "कभी-कभी खामोश रहकर सिर्फ अपनों की खुशी देखना ही जिंदगी का सबसे सुकून भरा लम्हा बन जाता है।"
-        },
-        {
-          quote: "इंसान की अच्छाई पर सब खामोश रहते हैं,\nलेकिन चर्चा अगर उसकी बुराई की हो तो गूंगे भी बोल पड़ते हैं... 🥀",
-          badge: "✦ दुनिया का सच ✦",
-          hook: "लोगों की फितरत का असली चेहरा...",
-          reflection: "दूसरों की राय से अपनी कीमत तय मत करो। दुनिया का काम सिर्फ कमियां निकालना है।"
-        },
-        {
-          quote: "सलीका ही नहीं आया हमें खुद को मशहूर करने का,\nवरना नकाब तो हम भी चेहरों पर कई सजा सकते थे... 🥀",
-          badge: "✦ सादगी और सच ✦",
-          hook: "झूठी दुनिया में सच्चे इंसान का हाल...",
-          reflection: "सादगी से जीना कमज़ोरी नहीं, बल्कि उन लोगों के बीच सबसे बड़ा हौसला है जो हर रोज़ अपना चेहरा बदलते हैं।"
-        },
-        {
-          quote: "जिंदगी ने एक बात बहुत अच्छी सिखाई,\nकिसी के इतने करीब मत जाओ कि उसके दूर जाने से आप खुद को ही खो दो... 🖤",
+          quote: "चेहरे पर मुस्कान और दिल में हौसला,\nयही जिंदगी जीने का असली हुनर है... ✨",
           badge: "✦ गहरा सबक ✦",
-          hook: "उम्मीदें हमेशा खुद से रखो...",
-          reflection: "जब आप किसी पर हद से ज्यादा निर्भर हो जाते हैं, तो उसका बदलता व्यवहार आपकी रूह तक को तोड़ देता है।"
+          hook: "मुस्कुराते रहिए...",
+          reflection: "मुश्किलें कितनी भी बड़ी हों, अगर आपका जज़्बा मजबूत है तो जीत हमेशा आपकी होगी।"
+        },
+        {
+          quote: "सलीका ही नहीं आया हमें मशहूर होने का,\nवरना नकाब तो हम भी सजा सकते थे... 🥀",
+          badge: "✦ सादगी और सच ✦",
+          hook: "झूठी दुनिया में सच...",
+          reflection: "सादगी से जीना कमजोरी नहीं, बल्कि उन लोगों के बीच सबसे बड़ा साहस है जो रोज चेहरा बदलते हैं।"
         }
       ],
       time_trust: [
         {
-          quote: "लोग बदलते नहीं हैं जनाब,\nबस उनके चेहरे से मतलब का नकाब उतर जाता है... 💔",
-          badge: "✦ वक्त और भरोसा ✦",
-          hook: "भरोसा कांच की तरह होता है...",
-          reflection: "एक बार टूटने के बाद कितना भी जोड़ लो, दरारें हमेशा अपनी मौजूदगी का अहसास कराती रहती हैं।"
+          quote: "लोग बदलते नहीं हैं जनाब,\nबस उनका मतलब खत्म हो जाता है... 🥀",
+          badge: "✦ मतलबी दुनिया ✦",
+          hook: "रिश्तों का सच...",
+          reflection: "जब काम निकल जाता है, तो सबसे मीठा बोलने वाले भी अजनबी बन जाते हैं।"
         },
         {
-          quote: "सब्र की एक बात बहुत अच्छी होती है,\nजब आता है तो हर चीज़ का हिसाब बराबर कर देता है... ⚖️⏳",
+          quote: "सब्र रखो,\nहर अंधेरी रात के बाद सवेरा तय है... 🌅⏳",
           badge: "✦ सब्र का फल ✦",
-          hook: "कुदरत का फैसला कभी गलत नहीं होता...",
-          reflection: "जब आप किसी के साथ नेक दिल से खड़े होते हैं, तो ऊपर वाला आपकी खामोशी का जवाब अपनी अदालत में देता है।"
+          hook: "उम्मीद कभी मत छोड़ो...",
+          reflection: "वक़्त कितना भी कठिन हो, आपका अटूट विश्वास आपको हर मुश्किल से पार ले जाएगा।"
         },
         {
-          quote: "जो बुरे वक्त में साथ छोड़ दें,\nउन्हें अपने अच्छे वक्त की दावत में कभी मत बुलाना... 🥀",
+          quote: "जो बुरे वक्त में साथ छोड़ दें,\nउन्हें अच्छे वक्त की दावत में मत बुलाना... 🥀",
           badge: "✦ असली रिश्ते ✦",
-          hook: "बुरे वक्त का भी एक फायदा है...",
-          reflection: "ये उन चेहरों को बेनकाब कर देता है, जो अच्छे वक्त में हमारे सबसे करीबी होने का दावा करते थे।"
-        },
-        {
-          quote: "जिन्हें कद्र नहीं थी तुम्हारे वक्त की,\nएक दिन वो तुमसे बात करने के लिए भी वक्त मांगेंगे... ⏳💎",
-          badge: "✦ वक्त का तमाशा ✦",
-          hook: "वक्त सबको अपनी औकात दिखाता है...",
-          reflection: "अपने आत्मसम्मान से कभी समझौता मत करो। जो आज आपको नजरअंदाज कर रहे हैं, कल वो आपकी मिसाल देंगे।"
-        },
-        {
-          quote: "वक्त जब भी करवट लेता है जनाब,\nतो बाजियां नहीं, पूरी की पूरी जिंदगी पलट जाती है... ⏳⚖️",
-          badge: "✦ वक्त की अदालत ✦",
-          hook: "वक्त किसी का गुलाम नहीं होता...",
-          reflection: "ऊपर वाले की लाठी में आवाज नहीं होती, लेकिन जब वो इंसाफ करता है तो हर गुरूर मिट्टी में मिल जाता है।"
+          hook: "बुरे वक्त का फायदा...",
+          reflection: "ये उन चेहरों को बेनकाब कर देता है, जो अच्छे वक्त में सबसे करीबी होने का दावा करते थे।"
         }
       ],
       silent_hustle: [
         {
-          quote: "ख़ामोशी से की गई मेहनत एक दिन\nइतना शोर मचाती है कि पूरी दुनिया को सुनना पड़ता है... 🔥🚀",
+          quote: "खामोशी कमजोरी नहीं,\nतूफान से पहले की शांति होती है... ⚔️🔥",
           badge: "✦ खामोश मेहनत ✦",
-          hook: "अपने सपनों का ढिंढोरा मत पीटो...",
-          reflection: "कामयाबी तब सबसे मीठी लगती है, जब आप बिना किसी को बताए चुपचाप अपनी मंजिल की तरफ बढ़ते रहते हैं।"
+          hook: "खामोशी में ताकत है...",
+          reflection: "अपने सपनों का ढिंढोरा मत पीटो। जब परिणाम सामने आएगा तो दुनिया खुद तालियां बजाएगी।"
         },
         {
-          quote: "अकेले चलने का हौसला रखो,\nक्योंकि काफिले हमेशा उनके पीछे चलते हैं जो राह खुद बनाते हैं... 🦅",
+          quote: "जो अकेला चलना जानता है,\nएक दिन दुनिया उसके पीछे चलती है... 🦁",
           badge: "✦ अकेलेपन की ताकत ✦",
           hook: "भीड़ का हिस्सा मत बनो...",
-          reflection: "शुरुआत में सब अकेला छोड़ देंगे, लेकिन जब आप सफल होंगे तो वही लोग आपकी मिसालें देंगे।"
+          reflection: "शुरुआत में सब साथ छोड़ देंगे, लेकिन जो टिके रहते हैं वही इतिहास लिखते हैं।"
         },
         {
-          quote: "रास्ते जितने कठिन होंगे,\nमंज़िल उतनी ही खूबसूरत होगी। बस कभी रुकना मत... 🏔️✨",
-          badge: "✦ अटूट हौसला ✦",
-          hook: "हर मुश्किल एक नया मौका है...",
-          reflection: "संघर्ष जितना बड़ा होगा, जीत का जश्न उतना ही शानदार और यादगार होगा।"
-        },
-        {
-          quote: "जो आज तुम्हारी खामोशी पर हंस रहे हैं,\nकल तुम्हारी कामयाबी पर ताली बजाने की कतार में सबसे आगे खड़े होंगे... 🦁🔥",
-          badge: "✦ स्वाभिमान ✦",
-          hook: "जवाब बातों से नहीं, नतीजों से दो...",
-          reflection: "किसी को साबित करने के लिए मत जियो। अपनी काबिलियत को तराशने में वक्त लगाओ।"
-        },
-        {
-          quote: "खुद को इतना काबिल बना लो कि\nतुम्हें ठुकराने वाले पूरी जिंदगी तुम्हें देखने के लिए तरस जाएं... 💎🔥",
+          quote: "खुद को इतना काबिल बना लो,\nकि ठुकराने वाले तुम्हें देखने को तरस जाएं... 💎",
           badge: "✦ जीत का जुनून ✦",
-          hook: "असली बदला अपनी तरक्की है...",
-          reflection: "नफरत में वक्त बर्बाद करने से अच्छा है कि अपनी ऊर्जा को अपने सपनों को सच करने में लगा दो।"
+          hook: "असली बदला तरक्की है...",
+          reflection: "नफरत में वक्त बर्बाद मत करो। अपनी पूरी ऊर्जा अपने सपनों को सच करने में लगा दो।"
         }
       ],
       heartbreak_healing: [
         {
-          quote: "कभी-कभी खामोश रहना ही बेहतर होता है,\nक्योंकि लफ्ज़ अक्सर उन लोगों को समझ नहीं आते जो दिल से नहीं सुनते... 🥀",
-          badge: "✦ दिल की आवाज़ ✦",
-          hook: "हर बात का जवाब देना जरूरी नहीं...",
-          reflection: "अपनी ऊर्जा और जज्बातों को उन लोगों पर बर्बाद मत करो, जो आपकी कद्र करना ही नहीं जानते।"
+          quote: "दिल टूटने का मतलब अंत नहीं,\nबल्कि एक मजबूत इंसान बनने की शुरुआत है... 🥀💎",
+          badge: "✦ हीलिंग और हौसला ✦",
+          hook: "दर्द से ताकत बनाओ...",
+          reflection: "टूटना बुरा नहीं होता, अगर वो आपको पहले से ज्यादा समझदार और निडर इंसान बना दे।"
         },
         {
-          quote: "खुद को इतना मजबूत बनाओ कि\nकोई तुम्हारी मुस्कान छीनने की हिम्मत भी न कर सके... 💎",
+          quote: "खुद को इतना मजबूत बनाओ,\nकि कोई तुम्हारी मुस्कान न छीन सके... 🌅",
           badge: "✦ आत्मबल ✦",
-          hook: "दूसरों की राय से खुद को मत तोलो...",
+          hook: "अपनी कद्र करो...",
           reflection: "आपकी कीमत किसी के व्यवहार से कम नहीं हो सकती। अपनी कद्र खुद करना सीखो।"
-        },
-        {
-          quote: "दिल टूटने का मतलब सफर का अंत नहीं,\nबल्कि खुद को नए सिरे से ढूंढने की सबसे खूबसूरत शुरुआत है... 🌅🥀",
-          badge: "✦ हीलिंग और सब्र ✦",
-          hook: "हर दर्द एक नया रास्ता खोलता है...",
-          reflection: "टूटना बुरा नहीं होता, अगर वो आपको पहले से ज्यादा समझदार और मजबूत इंसान बना दे।"
-        },
-        {
-          quote: "बहुत मुश्किल होता है उस इंसान को भुलाना,\nजिसने आपको मुस्कुराने की बेहिसाब वजहें दी हों... 🥀🖤",
-          badge: "✦ अनकहा दर्द ✦",
-          hook: "यादें कभी नहीं मरतीं...",
-          reflection: "कुछ रिश्ते खत्म हो जाते हैं, लेकिन उनके दिए गए अहसास जिंदगी भर हमारे साथ चलते हैं।"
         }
       ],
       mindset_psychology: [
         {
-          quote: "जिंदगी में वही इंसान आगे बढ़ता है,\nजो हालात का रोना रोने के बजाय समाधान ढूंढने में विश्वास रखता है... 🧠💡",
+          quote: "शेर शिकार करने से पहले कभी दहाड़ता नहीं,\nअपनी अगली चाल राज रखो... ⚔️🧠",
           badge: "✦ मजबूत सोच ✦",
-          hook: "माइंडसेट ही सब कुछ तय करता है...",
-          reflection: "समस्याएं हर किसी की जिंदगी में आती हैं, लेकिन विजेता वही बनता है जो हर चुनौती में अवसर तलाश लेता है।"
+          hook: "माइंडसेट ही सब कुछ है...",
+          reflection: "जब तक आपकी जीत सामने न आ जाए, अपनी योजनाओं को किसी के साथ साझा मत करो।"
         },
         {
-          quote: "जो खो गया उसके लिए रोने से अच्छा है,\nजो पास है उसे संवार कर एक नई शुरुआत करो... 🌅",
+          quote: "जो चला गया उसका पछतावा छोड़ो,\nजो पास है उससे नई शुरुआत करो... 🌅",
           badge: "✦ नई शुरुआत ✦",
-          hook: "बीते कल को बदल नहीं सकते...",
-          reflection: "लेकिन आने वाले कल को अपने आज के फैसलों से पूरी तरह खूबसूरत बना सकते हैं।"
-        },
-        {
-          quote: "ताकत आवाज में नहीं, अपने विचारों में रखो,\nक्योंकि फसल बारिश से उगती है, बादलों के गरजने से नहीं... 🌧️🌱",
-          badge: "✦ गहरा ज्ञान ✦",
-          hook: "शोर मचाने से कद बड़ा नहीं होता...",
-          reflection: "शांत रहकर गहरे प्रभाव पैदा करना ही एक महान और सफल इंसान की सबसे बड़ी पहचान होती है।"
+          hook: "आज से शुरुआत करो...",
+          reflection: "बीता हुआ कल बदल नहीं सकते, लेकिन आने वाले कल को अपने आज के फैसलों से संवार सकते हैं।"
         }
       ],
       maa_baap_family: [
         {
-          quote: "पूरी दुनिया में सिर्फ मां-बाप ही ऐसे होते हैं,\nजो खुद खाली पेट सोकर भी अपने बच्चों के सपने पूरे करते हैं... 🥺❤️",
+          quote: "पूरी दुनिया में सिर्फ मां-बाप ही ऐसे होते हैं,\nजो अपनी खुशियां कुर्बान करके हमें हंसाते हैं... 🥺❤️",
           badge: "✦ अनमोल मां-बाप ✦",
-          hook: "दुनिया का सबसे निस्वार्थ प्यार...",
-          reflection: "माता-पिता के पसीने की हर बूंद का कर्ज हम जिंदगी भर नहीं चुका सकते। उनकी कद्र उनके रहते करो।"
-        },
-        {
-          quote: "बाप की डांट और मां की दुआ,\nइंसान को कभी जिंदगी की ठोकरों में गिरने नहीं देती... 🕊️✨",
-          badge: "✦ सबसे बड़ा सहारा ✦",
-          hook: "घर के सबसे बड़े बुजुर्ग...",
-          reflection: "जब तक मां-बाप का साया सिर पर है, तब तक दुनिया की कोई भी मुश्किल आपको हरा नहीं सकती।"
-        }
-      ],
-      fake_people: [
-        {
-          quote: "आजकल रिश्ते भी धूप की तरह हो गए हैं,\nजब तक जरूरत होती है लोग तब तक ही आपके साथ खड़े रहते हैं... 🥀",
-          badge: "✦ मतलबी दुनिया ✦",
-          hook: "नकली रिश्तों का असली चेहरा...",
-          reflection: "जब काम निकल जाता है, तो सबसे मीठा बोलने वाले लोग भी आपको पहचानना छोड़ देते हैं।"
-        },
-        {
-          quote: "अगर किसी को परखना हो तो बस इतना देख लो\nकि वो अपने से कमजोर इंसान से किस लहजे में बात करता है... ✍️",
-          badge: "✦ इंसानियत की पहचान ✦",
-          hook: "सच्चे इंसान की सबसे बड़ी निशानी...",
-          reflection: "इंसान का असली चरित्र उसके पद या दौलत से नहीं, बल्कि दूसरों के प्रति उसके सम्मान से झलकता है।"
+          hook: "मां-बाप का प्यार...",
+          reflection: "माता-पिता के पसीने की हर बूंद का कर्ज हम जिंदगी भर नहीं चुका सकते। उनकी कद्र हमेशा करो।"
         }
       ]
     };
@@ -868,15 +1020,28 @@ Comment "LINK" or "INFO" below and I'll send the full guide directly to your DMs
       console.warn(`[AIEngine] Audio fetch warning: ${e.message}`);
     }
 
-    // 3. Render 9:16 Fullscreen Vertical Cinema Card (Optimal for Instagram Reels Algorithm)
-    const cardImage = await this.renderQuoteCardImage(
-      chosen.quote,
-      authorHandle,
-      chosen.badge,
-      criticScore.grade,
-      criticScore.overallRating,
-      '9:16'
-    );
+    // 3. Render 9:16 Fullscreen Vertical Anime/Cinema Card
+    const animeDir = path.join(appConfig.dataDir, 'anime');
+    let animeImages: string[] = [];
+    if (fs.existsSync(animeDir)) {
+      animeImages = fs.readdirSync(animeDir).filter(f => f.endsWith('.jpg') || f.endsWith('.png')).map(f => path.join(animeDir, f));
+    }
+
+    let cardImage: { localPath: string; url: string };
+    if (animeImages.length > 0) {
+      const chosenAnime = animeImages[Math.floor(Math.random() * animeImages.length)];
+      console.log(`[AIEngine] 🎌 Using Aesthetic Anime Artwork Background: ${chosenAnime}`);
+      cardImage = await this.renderAnimeQuoteCard(chosenAnime, chosen.quote, authorHandle, chosen.badge);
+    } else {
+      cardImage = await this.renderQuoteCardImage(
+        chosen.quote,
+        authorHandle,
+        chosen.badge,
+        criticScore.grade,
+        criticScore.overallRating,
+        '9:16'
+      );
+    }
 
     // 4. Generate Cinematic 9:16 Fullscreen Motion Reel Video with Music (20 Seconds Duration)
     let videoReelPath = '';
@@ -898,7 +1063,7 @@ ${chosen.reflection}
 
 🎵 ऑडियो: ${audioTrack.title} (${audioTrack.mood})
 ━━━━━━━━━━━━━━━━━━━
-📌 अगर यह बात सीधे आपके दिल को छुई हो, तो इस रील को Save 🔖 करें ताकि मुश्किल वक्त में याद रहे।
+📌 अगर यह बात सीधे आपके दिल को छुई हो, तो इस रील को Save 🔖 करें!
 📩 उस ख़ास दोस्त के साथ Share करें जिसे आज यह सुनने की सबसे ज़्यादा ज़रूरत है।
 💬 क्या आप इस बात से सहमत हैं? अपनी राय नीचे कमेंट्स में ज़रूर बताएं 👇`;
 

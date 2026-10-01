@@ -512,29 +512,98 @@ export class InstagramWebEngine {
       await page.goto('https://www.instagram.com/', { waitUntil: 'domcontentloaded', timeout: 45000 });
       await new Promise(r => setTimeout(r, 4000));
 
+      // Dismiss dialogs & popups
+      await page.evaluate(() => {
+        const elements = Array.from(document.querySelectorAll('button, div[role="button"], a, span')) as HTMLElement[];
+        for (const el of elements) {
+          const t = (el.innerText || '').trim().toLowerCase();
+          if (
+            t === 'not now' ||
+            t === 'cancel' ||
+            t === 'dismiss' ||
+            t === 'save info' ||
+            t === 'allow all cookies' ||
+            t === 'accept all'
+          ) {
+            el.click();
+          }
+        }
+      });
+      await new Promise(r => setTimeout(r, 2000));
+
+      // Click "Your story" / Story camera button in top tray or header
+      console.log(`[InstagramWebEngine] Clicking Story camera / Your Story tray button...`);
+      await page.evaluate(() => {
+        // Try Story SVG icon or Your story avatar
+        const svgs = Array.from(document.querySelectorAll('svg'));
+        for (const s of svgs) {
+          const l = (s.getAttribute('aria-label') || '').toLowerCase();
+          if (l.includes('story') || l.includes('camera') || l.includes('add to story')) {
+            const p = (s.closest('button') || s.closest('div[role="button"]') || s) as HTMLElement;
+            if (p) { p.click(); return; }
+          }
+        }
+        const buttons = Array.from(document.querySelectorAll('div[role="button"], button, span, a')) as HTMLElement[];
+        for (const b of buttons) {
+          const text = (b.innerText || '').toLowerCase();
+          const label = (b.getAttribute('aria-label') || '').toLowerCase();
+          if (text.includes('your story') || text.includes('story') || label.includes('your story')) {
+            b.click();
+            return;
+          }
+        }
+      });
+      await new Promise(r => setTimeout(r, 3000));
+
       let storyInput = await page.$('input[type="file"]');
+      if (!storyInput) {
+        // Fallback: try finding any input[type="file"] or trigger button
+        storyInput = await page.$('input[accept*="image"]');
+      }
+
       if (storyInput) {
         console.log(`[InstagramWebEngine] Uploading story image: ${filePath}...`);
         await storyInput.uploadFile(filePath);
-        await new Promise(r => setTimeout(r, 6000));
+        await new Promise(r => setTimeout(r, 7000));
 
-        // Click "Add to your story"
-        await page.evaluate(() => {
+        // Click "Your story" or "Add to your story" or "Share"
+        console.log(`[InstagramWebEngine] Confirming Story share...`);
+        let storyConfirmed = await page.evaluate(() => {
           const btns = Array.from(document.querySelectorAll('button, div[role="button"], span')) as HTMLElement[];
           for (const b of btns) {
             const t = (b.innerText || '').toLowerCase();
-            if (t.includes('your story') || t.includes('add to story') || t.includes('share')) {
+            const label = (b.getAttribute('aria-label') || '').toLowerCase();
+            if (
+              t.includes('your story') ||
+              t.includes('add to story') ||
+              t.includes('share to story') ||
+              t === 'share' ||
+              t === 'send' ||
+              label.includes('your story')
+            ) {
               b.click();
-              break;
+              return true;
             }
           }
+          return false;
         });
-        await new Promise(r => setTimeout(r, 8000));
+
+        if (!storyConfirmed) {
+          // If not clicked, try clicking bottom action area
+          await page.evaluate(() => {
+            const btns = Array.from(document.querySelectorAll('footer button, footer div[role="button"], div[role="dialog"] button')) as HTMLElement[];
+            if (btns.length > 0) {
+              btns[btns.length - 1].click();
+            }
+          });
+        }
+
+        await new Promise(r => setTimeout(r, 10000));
         console.log(`[InstagramWebEngine] Story posted successfully!`);
         return { success: true, message: 'Instagram Story uploaded successfully!' };
       }
 
-      return { success: false, message: 'Story upload button not found in mobile view' };
+      return { success: false, message: 'Story file input not found' };
     } catch (err: any) {
       console.error(`[InstagramWebEngine] Story upload error:`, err);
       return { success: false, message: `Story upload error: ${err.message}` };
