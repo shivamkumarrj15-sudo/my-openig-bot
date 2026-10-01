@@ -15,6 +15,7 @@ import { postScheduler } from './core/scheduler/PostScheduler';
 import { aiPilotScheduler } from './core/ai/AIPilotScheduler';
 import { sessionManager } from './core/session/SessionManager';
 import { webhookDispatcher } from './core/webhooks/WebhookDispatcher';
+import { db } from './storage/DatabaseAdapter';
 
 const app = express();
 const server = http.createServer(app);
@@ -54,11 +55,55 @@ if (fs.existsSync(dashboardDist)) {
 
 // Keep-Alive & Monitoring Health Endpoints (UptimeRobot / Cron-job.org)
 app.get('/health', (req, res) => {
-  res.status(200).json({ status: 'ok', uptime: process.uptime(), timestamp: new Date().toISOString() });
+  const nowUtc = new Date();
+  const istTime = new Date(nowUtc.getTime() + (5.5 * 60 * 60 * 1000));
+  res.status(200).json({
+    status: 'ok',
+    uptimeSeconds: Math.floor(process.uptime()),
+    utcTime: nowUtc.toISOString(),
+    istTime: istTime.toISOString().replace('Z', '+05:30'),
+    currentIstHour: istTime.getUTCHours(),
+    scheduledPeakHoursIST: [9, 14, 21]
+  });
 });
 
 app.get('/ping', (req, res) => {
   res.status(200).send('pong');
+});
+
+// Manual 1-Click Trigger Endpoint for Instant Live Post
+app.get('/trigger-now', async (req, res) => {
+  try {
+    const envUser = process.env.INSTAGRAM_USERNAME?.trim() || 'shivamkumar12323229';
+    const sessionId = `ig_${envUser}_cloud`;
+    const success = await aiPilotScheduler.checkAndExecuteAutoPost(sessionId, true);
+    res.json({
+      success,
+      message: success ? 'Live 4K Quote Post & Story successfully published to Instagram!' : 'Post generation failed or rate limited',
+      timestamp: new Date().toISOString()
+    });
+  } catch (err: any) {
+    res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// Full System Status Endpoint
+app.get('/status', (req, res) => {
+  const nowUtc = new Date();
+  const istTime = new Date(nowUtc.getTime() + (5.5 * 60 * 60 * 1000));
+  const sessions = db.getSessions();
+  const posts = db.getPosts();
+  const logs = db.getAIActivityLogs(10);
+
+  res.json({
+    server: config.appName,
+    version: config.version,
+    currentTimeIST: `${istTime.getUTCHours()}:${istTime.getUTCMinutes()}:${istTime.getUTCSeconds()} IST`,
+    schedule: '3 Daily Posts (09:00 AM, 02:00 PM, 09:00 PM IST)',
+    activeAccounts: sessions.map(s => ({ username: s.username, status: s.status })),
+    totalPublishedPosts: posts.filter(p => p.status === 'published').length,
+    recentAILogs: logs
+  });
 });
 
 // Base Redirect & Info
@@ -70,7 +115,9 @@ app.get('/', (req, res) => {
     docs: '/api/docs',
     api: '/api/v1',
     ws: '/ws',
-    health: '/health'
+    health: '/health',
+    statusPage: '/status',
+    triggerInstantPost: '/trigger-now'
   });
 });
 

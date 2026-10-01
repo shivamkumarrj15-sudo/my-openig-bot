@@ -36,7 +36,26 @@ export class AIPilotScheduler {
     const config = db.getAIConfig();
     if (!config.isEnabled) return;
 
-    const sessions = sessionManager.getSessions().filter(s => s.status === 'READY');
+    let sessions = sessionManager.getSessions().filter(s => s.status === 'READY');
+    if (sessions.length === 0) {
+      const envSession = process.env.INSTAGRAM_SESSION_ID?.trim() || '29180762911%3A8GHBcWmlbEFceL%3A23%3AAYlJwNdrLqQwzCb8JiwPoU_CJ_3y6CJGmzFfRNHACg';
+      const envUser = process.env.INSTAGRAM_USERNAME?.trim() || 'shivamkumar12323229';
+      const envUid = process.env.INSTAGRAM_USER_ID?.trim() || '29180762911';
+      const sessionId = `ig_${envUser}_cloud`;
+
+      db.upsertSession({
+        id: sessionId,
+        username: envUser,
+        displayName: envUser,
+        status: 'READY',
+        authType: 'cookies',
+        cookies: { sessionid: envSession, ds_user_id: envUid },
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+      sessions = sessionManager.getSessions().filter(s => s.status === 'READY');
+    }
+
     if (sessions.length === 0) return;
 
     // Cycle through all active accounts
