@@ -119,11 +119,17 @@ export class InstagramWebEngine {
     browser = (await puppeteer.launch({
       executablePath: executable,
       userDataDir: profileDir,
-      headless: headless ? ('new' as any) : false,
+      headless: true,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
+        '--disable-gpu',
+        '--disable-software-rasterizer',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process',
+        '--disable-extensions',
         '--disable-blink-features=AutomationControlled',
         '--disable-infobars',
         '--window-size=1280,800',
@@ -265,7 +271,11 @@ export class InstagramWebEngine {
       }
 
       console.log(`[InstagramWebEngine] Navigating to https://www.instagram.com/...`);
-      await page.goto('https://www.instagram.com/', { waitUntil: 'domcontentloaded', timeout: 45000 });
+      try {
+        await page.goto('https://www.instagram.com/', { waitUntil: 'domcontentloaded', timeout: 90000 });
+      } catch (navErr: any) {
+        console.warn(`[InstagramWebEngine] Navigation notice: ${navErr.message}. Checking page...`);
+      }
       await new Promise(r => setTimeout(r, 6000));
 
       const currentUrl = page.url();
@@ -509,7 +519,11 @@ export class InstagramWebEngine {
         );
       }
 
-      await page.goto('https://www.instagram.com/', { waitUntil: 'domcontentloaded', timeout: 45000 });
+      try {
+        await page.goto('https://www.instagram.com/', { waitUntil: 'domcontentloaded', timeout: 90000 });
+      } catch (navErr: any) {
+        console.warn(`[InstagramWebEngine] Story navigation notice: ${navErr.message}. Checking page...`);
+      }
       await new Promise(r => setTimeout(r, 4000));
 
       // Dismiss dialogs & popups

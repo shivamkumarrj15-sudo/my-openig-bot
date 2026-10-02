@@ -331,11 +331,28 @@ export class DatabaseAdapter {
       isVerified: true,
       followerCount: 28450,
       followingCount: 412,
-      status: 'READY',
+      status: 'DISCONNECTED', // Mock demo only
       authType: 'browser_profile',
       createdAt: new Date(Date.now() - 86400000 * 7).toISOString(),
       updatedAt: new Date().toISOString(),
       lastActiveAt: new Date().toISOString()
+    };
+
+    // Auto-seed real user cloud session from environment
+    const envSession = process.env.INSTAGRAM_SESSION_ID?.trim() || '29180762911%3A8GHBcWmlbEFceL%3A23%3AAYlJwNdrLqQwzCb8JiwPoU_CJ_3y6CJGmzFfRNHACg';
+    const envUser = process.env.INSTAGRAM_USERNAME?.trim() || 'shivamkumar12323229';
+    const envUid = process.env.INSTAGRAM_USER_ID?.trim() || '29180762911';
+    const realSessionId = `ig_${envUser}_cloud`;
+
+    this.data.sessions[realSessionId] = {
+      id: realSessionId,
+      username: envUser,
+      displayName: envUser,
+      status: 'READY',
+      authType: 'cookies',
+      cookies: { sessionid: envSession, ds_user_id: envUid },
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
     };
   }
 

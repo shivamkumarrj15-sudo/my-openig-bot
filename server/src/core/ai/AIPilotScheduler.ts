@@ -36,15 +36,16 @@ export class AIPilotScheduler {
     const config = db.getAIConfig();
     if (!config.isEnabled) return;
 
-    let sessions = sessionManager.getSessions().filter(s => s.status === 'READY');
-    if (sessions.length === 0) {
-      const envSession = process.env.INSTAGRAM_SESSION_ID?.trim() || '29180762911%3A8GHBcWmlbEFceL%3A23%3AAYlJwNdrLqQwzCb8JiwPoU_CJ_3y6CJGmzFfRNHACg';
-      const envUser = process.env.INSTAGRAM_USERNAME?.trim() || 'shivamkumar12323229';
-      const envUid = process.env.INSTAGRAM_USER_ID?.trim() || '29180762911';
-      const sessionId = `ig_${envUser}_cloud`;
+    // 1. Ensure real user session is registered
+    const envSession = process.env.INSTAGRAM_SESSION_ID?.trim() || '29180762911%3A8GHBcWmlbEFceL%3A23%3AAYlJwNdrLqQwzCb8JiwPoU_CJ_3y6CJGmzFfRNHACg';
+    const envUser = process.env.INSTAGRAM_USERNAME?.trim() || 'shivamkumar12323229';
+    const envUid = process.env.INSTAGRAM_USER_ID?.trim() || '29180762911';
+    const realSessionId = `ig_${envUser}_cloud`;
 
+    const existingReal = db.getSession(realSessionId);
+    if (!existingReal || existingReal.status !== 'READY' || !existingReal.cookies?.sessionid) {
       db.upsertSession({
-        id: sessionId,
+        id: realSessionId,
         username: envUser,
         displayName: envUser,
         status: 'READY',
@@ -53,9 +54,10 @@ export class AIPilotScheduler {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       });
-      sessions = sessionManager.getSessions().filter(s => s.status === 'READY');
     }
 
+    // 2. Only pick real ready sessions (filter out mock demo)
+    const sessions = sessionManager.getSessions().filter(s => s.status === 'READY' && s.id !== 'ig_demo_creator');
     if (sessions.length === 0) return;
 
     // Cycle through all active accounts
