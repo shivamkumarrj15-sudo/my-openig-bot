@@ -27,8 +27,13 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(cookieParser());
 app.use(rateLimiter);
 
-// Media Static Files
+// Public Static Studio UI & Media Static Files
+const publicDir = path.resolve(__dirname, '../public');
+if (fs.existsSync(publicDir)) {
+  app.use(express.static(publicDir));
+}
 app.use('/media', express.static(config.mediaDir));
+app.use('/data/anime', express.static(path.join(config.dataDir, 'anime')));
 
 // Swagger Documentation
 if (config.enableSwagger) {
@@ -45,12 +50,6 @@ app.use('/api/v1', routes);
 const dashboardDist = path.resolve(__dirname, '../../dashboard/dist');
 if (fs.existsSync(dashboardDist)) {
   app.use(express.static(dashboardDist));
-  app.get('*', (req, res, next) => {
-    if (req.path.startsWith('/api') || req.path.startsWith('/ws') || req.path.startsWith('/media') || req.path.startsWith('/health') || req.path.startsWith('/ping')) {
-      return next();
-    }
-    res.sendFile(path.join(dashboardDist, 'index.html'));
-  });
 }
 
 // Keep-Alive & Monitoring Health Endpoints (UptimeRobot / Cron-job.org)
@@ -106,12 +105,32 @@ app.get('/status', (req, res) => {
   });
 });
 
-// Base Redirect & Info
-app.get('/', (req, res) => {
+// Base UI Routes & Info
+app.get(['/', '/studio', '/control'], (req, res) => {
+  const publicIndex = path.resolve(__dirname, '../public/index.html');
+  if (fs.existsSync(publicIndex)) {
+    return res.sendFile(publicIndex);
+  }
   res.json({
     name: config.appName,
     version: config.version,
     status: 'online',
+    studio: '/studio',
+    docs: '/api/docs',
+    api: '/api/v1',
+    ws: '/ws',
+    health: '/health',
+    statusPage: '/status',
+    triggerInstantPost: '/trigger-now'
+  });
+});
+
+app.get('/info', (req, res) => {
+  res.json({
+    name: config.appName,
+    version: config.version,
+    status: 'online',
+    studio: '/studio',
     docs: '/api/docs',
     api: '/api/v1',
     ws: '/ws',

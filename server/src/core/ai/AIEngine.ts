@@ -1129,6 +1129,276 @@ ${chosen.reflection}
   }
 
   /**
+   * Studio Custom Generator: Fully Custom Topic, Language, Visual Style, Music & Voiceover
+   */
+  public async generateCustomStudioPost(opts: {
+    category?: string;
+    customTopic?: string;
+    customQuoteText?: string;
+    language?: 'hindi' | 'hinglish' | 'english';
+    visualStyle?: 'anime' | 'scribble' | 'noir' | 'scenic';
+    musicTrackId?: string;
+    videoType?: 'reel_motion' | 'ai_voiceover' | 'quote_card';
+    authorHandle?: string;
+    includeVoiceover?: boolean;
+    voiceName?: string;
+  }): Promise<IEmotionalQuoteResult> {
+    const authorHandle = opts.authorHandle || '@shivamkumar12323229';
+    const language = opts.language || 'hindi';
+    const category = opts.category || 'silent_hustle';
+    const visualStyle = opts.visualStyle || 'anime';
+    const videoType = opts.videoType || 'reel_motion';
+
+    // 1. Language-Specific Curated Database
+    const multiLangDatabase: Record<string, Record<string, Array<{ quote: string; badge: string; hook: string; reflection: string }>>> = {
+      hindi: {
+        gandhi_jayanti: [
+          {
+            quote: "कमजोर कभी माफ नहीं कर सकता,\nमाफ करना ताकतवर इंसान की निशानी है... 🕊️🇮🇳",
+            badge: "✦ 2 अक्टूबर गांधी जयंती ✦",
+            hook: "सत्य और अहिंसा...",
+            reflection: "क्रोध और बदले की भावना से केवल विनाश होता है। शांति, क्षमा और स्वाभिमान ही एक महान आत्मा की पहचान है।"
+          },
+          {
+            quote: "खुद वो बदलाव बनिए जनाब,\nजो आप पूरी दुनिया में देखना चाहते हैं... 🕊️✨",
+            badge: "✦ 2 अक्टूबर विशेष ✦",
+            hook: "बदलाव खुद से शुरू होता है...",
+            reflection: "दुनिया को बदलने की शुरुआत खुद के विचारों और कर्मों को संवारने से होती है।"
+          }
+        ],
+        silent_hustle: [
+          {
+            quote: "खामोशी कमजोरी नहीं,\nतूफान से पहले की शांति होती है... ⚔️🔥",
+            badge: "✦ खामोश मेहनत ✦",
+            hook: "खामोशी में ताकत है...",
+            reflection: "अपने सपनों का ढिंढोरा मत पीटो। जब परिणाम सामने आएगा तो दुनिया खुद तालियां बजाएगी।"
+          },
+          {
+            quote: "खुद को इतना काबिल बना लो,\nकि ठुकराने वाले तुम्हें देखने को तरस जाएं... 💎",
+            badge: "✦ जीत का जुनून ✦",
+            hook: "असली बदला तरक्की है...",
+            reflection: "नफरत में वक्त बर्बाद मत करो। अपनी पूरी ऊर्जा अपने सपनों को सच करने में लगा दो।"
+          },
+          {
+            quote: "जो अकेला चलना जानता है,\nएक दिन दुनिया उसके पीछे चलती है... 🦁",
+            badge: "✦ अकेलेपन की ताकत ✦",
+            hook: "भीड़ का हिस्सा मत बनो...",
+            reflection: "शुरुआत में सब साथ छोड़ देंगे, लेकिन जो टिके रहते हैं वही इतिहास लिखते हैं।"
+          }
+        ],
+        life_reality: [
+          {
+            quote: "पहचान हमेशा अपने दम पर बनाओ,\nकिसी के नाम के सहारे नहीं... 🦅",
+            badge: "✦ ज़िन्दगी का सच ✦",
+            hook: "पहचान अपने दम पर बनाओ...",
+            reflection: "दूसरों की चमक में खड़े होकर खुद को रोशन समझना सबसे बड़ा भ्रम है। अपनी राह खुद चुनो।"
+          },
+          {
+            quote: "वक्त सबको अपनी औकात दिखाता है,\nबस थोड़ा सब्र रखिए जनाब... ⏳",
+            badge: "✦ वक्त की अदालत ✦",
+            hook: "वक्त सबका आता है...",
+            reflection: "ऊपर वाले की लाठी में आवाज नहीं होती, लेकिन जब इंसाफ होता है तो हर घमंड टूट जाता है।"
+          }
+        ],
+        mindset_psychology: [
+          {
+            quote: "शेर शिकार करने से पहले कभी दहाड़ता नहीं,\nअपनी अगली चाल राज रखो... ⚔️🧠",
+            badge: "✦ मजबूत सोच ✦",
+            hook: "माइंडसेट ही सब कुछ है...",
+            reflection: "जब तक आपकी जीत सामने न आ जाए, अपनी योजनाओं को किसी के साथ साझा मत करो।"
+          }
+        ],
+        heartbreak_healing: [
+          {
+            quote: "दिल टूटने का मतलब अंत नहीं,\nबल्कि एक मजबूत इंसान बनने की शुरुआत है... 🥀💎",
+            badge: "✦ हीलिंग और हौसला ✦",
+            hook: "दर्द से ताकत बनाओ...",
+            reflection: "टूटना बुरा नहीं होता, अगर वो आपको पहले से ज्यादा समझदार और निडर इंसान बना दे।"
+          }
+        ]
+      },
+      hinglish: {
+        silent_hustle: [
+          {
+            quote: "Khamoshi kamzori nahi,\ntoofan se pehle ki shanti hoti hai... ⚔️🔥",
+            badge: "✦ SILENT HUSTLE ✦",
+            hook: "Work in silence...",
+            reflection: "Apne sapno ka shor mat machao. Jab result aayega toh duniya khud dekhegi."
+          },
+          {
+            quote: "Khud ko itna kaabil bana lo,\nki chhodne wale dekhne ko taras jayein... 💎",
+            badge: "✦ SELF GROWTH ✦",
+            hook: "Level up your life...",
+            reflection: "Nafrat me time waste mat karo. Apni energy goals achieve karne me lagao."
+          },
+          {
+            quote: "Jo akele chalna jaanta hai,\nek din duniya uske peeche chalti hai... 🦁",
+            badge: "✦ SOLO WARRIOR ✦",
+            hook: "Dare to walk alone...",
+            reflection: "Starting me log saath chhodenge, lekin jo tika rehta hai wahi history banata hai."
+          }
+        ],
+        life_reality: [
+          {
+            quote: "Pehchan hamesha apne dum par banao,\nkisi ke naam ke sahare nahi... 🦅",
+            badge: "✦ LIFE LESSON ✦",
+            hook: "Build your own name...",
+            reflection: "Dusro ki shadow me jeena chhod kar khud ki pehchan banayein."
+          },
+          {
+            quote: "Waqt sabko apni aukaat dikhata hai,\nbas thoda sabr rakhiye janab... ⏳",
+            badge: "✦ TIME & TRUTH ✦",
+            hook: "Patience is power...",
+            reflection: "Karma sabka hisaab karta hai. Apne kaam par focus rakhiye."
+          }
+        ]
+      },
+      english: {
+        silent_hustle: [
+          {
+            quote: "Silence isn't weakness,\nit's the calm before the storm... ⚔️🔥",
+            badge: "✦ SILENT DISCIPLINE ✦",
+            hook: "Move in silence...",
+            reflection: "Never announce your moves before they happen. Let your victory make the noise."
+          },
+          {
+            quote: "Build yourself so strong,\nthat your success becomes undeniable... 💎",
+            badge: "✦ UNSTOPPABLE MINDSET ✦",
+            hook: "Obsessed with growth...",
+            reflection: "Stop seeking validation from people who will never understand your vision."
+          },
+          {
+            quote: "The wolf that walks alone\nleads the entire pack tomorrow... 🦁",
+            badge: "✦ SOLITARY GRIND ✦",
+            hook: "Embrace the solitude...",
+            reflection: "Greatness is forged in the hours when nobody is watching you."
+          }
+        ],
+        life_reality: [
+          {
+            quote: "Build a reputation on your own merit,\nnever in someone else's shadow... 🦅",
+            badge: "✦ HARSH REALITY ✦",
+            hook: "Stand on your own feet...",
+            reflection: "Real self-respect comes from knowing you built your life with your own bare hands."
+          }
+        ]
+      }
+    };
+
+    const langDb = multiLangDatabase[language] || multiLangDatabase.hindi;
+    const catDb = langDb[category] || langDb['silent_hustle'] || multiLangDatabase.hindi['silent_hustle'];
+    const chosenItem = catDb[Math.floor(Math.random() * catDb.length)];
+
+    const quoteText = opts.customQuoteText || chosenItem.quote;
+    const badgeTag = chosenItem.badge;
+    const hook = opts.customTopic || chosenItem.hook;
+    const reflection = chosenItem.reflection;
+
+    // 2. Select Audio Track
+    let audioTrack: ITrendingAudioTrack;
+    if (opts.musicTrackId && opts.musicTrackId !== 'random') {
+      audioTrack = audioEngine.getAudioById(opts.musicTrackId);
+    } else {
+      audioTrack = audioEngine.getAudioForCategory(category);
+    }
+
+    let localAudioPath = '';
+    try {
+      localAudioPath = await audioEngine.ensureAudioFile(audioTrack);
+    } catch (e: any) {
+      console.warn(`[AIEngine] Audio download notice: ${e.message}`);
+    }
+
+    // 3. Render Card based on Visual Style
+    let cardImage: { localPath: string; url: string };
+    const animeDir = path.join(appConfig.dataDir, 'anime');
+    let animeImages: string[] = [];
+    if (fs.existsSync(animeDir)) {
+      animeImages = fs.readdirSync(animeDir).filter(f => f.endsWith('.jpg') || f.endsWith('.png')).map(f => path.join(animeDir, f));
+    }
+
+    if (visualStyle === 'anime' && animeImages.length > 0) {
+      // If Gandhi Jayanti, pick gandhi image if present
+      let chosenAnime = animeImages[Math.floor(Math.random() * animeImages.length)];
+      if (category === 'gandhi_jayanti') {
+        const gandhiImg = animeImages.find(f => f.includes('gandhi'));
+        if (gandhiImg) chosenAnime = gandhiImg;
+      }
+      cardImage = await this.renderAnimeQuoteCard(chosenAnime, quoteText, authorHandle, badgeTag);
+    } else if (visualStyle === 'scribble') {
+      const scribblesDir = path.join(appConfig.dataDir, 'scribbles');
+      let scribbles: string[] = [];
+      if (fs.existsSync(scribblesDir)) {
+        scribbles = fs.readdirSync(scribblesDir).filter(f => f.endsWith('.jpg') || f.endsWith('.png')).map(f => path.join(scribblesDir, f));
+      }
+      if (scribbles.length > 0) {
+        const chosenScribble = scribbles[Math.floor(Math.random() * scribbles.length)];
+        cardImage = await this.renderScribbleCard(chosenScribble, hook, quoteText, authorHandle);
+      } else {
+        cardImage = await this.renderQuoteCardImage(quoteText, authorHandle, badgeTag, 'S+ Ultra-Masterpiece', 98.5, '9:16');
+      }
+    } else {
+      cardImage = await this.renderQuoteCardImage(quoteText, authorHandle, badgeTag, 'S+ Ultra-Masterpiece', 98.5, '9:16');
+    }
+
+    // 4. Generate Video Reel or AI Video
+    let videoReelPath = '';
+    let videoReelUrl = '';
+
+    if (videoType === 'reel_motion' && localAudioPath && cardImage.localPath && fs.existsSync(cardImage.localPath)) {
+      try {
+        videoReelPath = await audioEngine.createCinematicQuoteVideo(cardImage.localPath, localAudioPath, 20, '9:16');
+        videoReelUrl = `/media/${path.basename(videoReelPath)}`;
+      } catch (err: any) {
+        console.warn(`[AIEngine] Video render notice: ${err.message}`);
+      }
+    }
+
+    const criticScore = this.evaluateQuoteCritic(quoteText, hook, category);
+
+    const caption = `${quoteText}
+
+💭 ${language === 'english' ? 'Food for thought:' : 'कभी ठहर कर सोचा है?'}
+${reflection}
+
+🎵 ${language === 'english' ? 'Soundtrack:' : 'ऑडियो:'} ${audioTrack.title} (${audioTrack.mood})
+━━━━━━━━━━━━━━━━━━━
+📌 ${language === 'english' ? 'Save this reel for daily focus!' : 'अगर यह बात सीधे आपके दिल को छुई हो, तो इस रील को Save 🔖 करें!'}
+📩 ${language === 'english' ? 'Share with someone who needs this today.' : 'उस ख़ास दोस्त के साथ Share करें जिसे आज यह सुनने की सबसे ज़्यादा ज़रूरत है।'}
+💬 ${language === 'english' ? 'Drop your thoughts below 👇' : 'अपनी राय नीचे कमेंट्स में ज़रूर बताएं 👇'}`;
+
+    const hashtags = [
+      'HindiQuotes',
+      'LifeLessons',
+      'SilentHustle',
+      'Motivation',
+      'StoicMindset',
+      'AnimeAesthetic',
+      'TrendingAudio',
+      'ReelsIndia',
+      'ViralReels',
+      'SelfGrowth',
+      'DailyQuotes'
+    ];
+
+    return {
+      trendingTopic: hook,
+      category,
+      badgeTag,
+      quoteText,
+      caption,
+      hashtags,
+      cardImageUrl: cardImage.url,
+      localImagePath: cardImage.localPath,
+      videoReelPath: videoReelPath || undefined,
+      videoReelUrl: videoReelUrl || undefined,
+      audioTrack,
+      callToAction: `Follow ${authorHandle} for daily aesthetic quotes!`,
+      criticScore
+    };
+  }
+
+  /**
    * Generate Full AI Video with Stock Footage, Hindi Voiceover & Subtitles using MoneyPrinter Turbo
    */
   public async generateMoneyPrinterAIVideo(

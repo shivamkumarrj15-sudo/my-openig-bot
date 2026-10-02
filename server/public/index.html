@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>OpenIG Studio — Cloud Instagram AI Control Panel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800;900&family=Noto+Serif+Devanagari:wght@600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-dark: #07090e;
+      --card-bg: rgba(18, 22, 33, 0.75);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --accent-gold: #f59e0b;
+      --accent-gold-glow: rgba(245, 158, 11, 0.25);
+      --accent-cyan: #38bdf8;
+      --accent-pink: #f43f5e;
+      --accent-purple: #a855f7;
+      --text-main: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg-dark);
+      background-image: 
+        radial-gradient(circle at 10% 20%, rgba(245, 158, 11, 0.06) 0%, transparent 40%),
+        radial-gradient(circle at 90% 80%, rgba(56, 189, 248, 0.06) 0%, transparent 40%),
+        radial-gradient(circle at 50% 50%, rgba(168, 85, 247, 0.04) 0%, transparent 50%);
+      color: var(--text-main);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      min-height: 100vh;
+      padding-bottom: 60px;
+    }
+
+    /* Top Navbar */
+    .navbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 18px 24px;
+      border-bottom: 1px solid var(--card-border);
+      background: rgba(10, 13, 20, 0.85);
+      backdrop-filter: blur(20px);
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .brand-logo {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #f59e0b, #ec4899, #8b5cf6);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 20px;
+      box-shadow: 0 4px 20px rgba(245, 158, 11, 0.3);
+    }
+
+    .brand-text h1 {
+      font-size: 18px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      background: linear-gradient(90deg, #ffffff, #fde68a);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-text p {
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+    }
+
+    .status-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: rgba(34, 197, 94, 0.12);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+      color: #4ade80;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .pulse-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #22c55e;
+      box-shadow: 0 0 10px #22c55e;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+      70% { transform: scale(1.1); box-shadow: 0 0 0 8px rgba(34, 197, 94, 0); }
+      100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+    }
+
+    /* Layout Container */
+    .container {
+      max-width: 1200px;
+      margin: 24px auto;
+      padding: 0 20px;
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 900px) {
+      .container {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Glass Cards */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 24px;
+      backdrop-filter: blur(25px);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+      margin-bottom: 24px;
+    }
+
+    .card-title {
+      font-size: 17px;
+      font-weight: 800;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      color: #ffffff;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: 12px;
+    }
+
+    /* Form Fields */
+    .form-group {
+      margin-bottom: 18px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+
+    .input-text, .select-box {
+      width: 100%;
+      padding: 12px 16px;
+      background: rgba(10, 13, 20, 0.7);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 12px;
+      color: #ffffff;
+      font-size: 14px;
+      font-family: inherit;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .input-text:focus, .select-box:focus {
+      border-color: var(--accent-gold);
+      box-shadow: 0 0 15px var(--accent-gold-glow);
+    }
+
+    /* Options Grid / Buttons */
+    .option-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .pill-btn {
+      padding: 9px 16px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill-btn:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+    }
+
+    .pill-btn.active {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.2));
+      border-color: var(--accent-gold);
+      color: #fbbf24;
+      box-shadow: 0 0 15px var(--accent-gold-glow);
+    }
+
+    /* Toggle Switches */
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 48px;
+      height: 26px;
+    }
+
+    .toggle-switch input { opacity: 0; width: 0; height: 0; }
+
+    .slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(255, 255, 255, 0.12);
+      transition: .3s;
+      border-radius: 34px;
+    }
+
+    .slider:before {
+      position: absolute;
+      content: "";
+      height: 18px;
+      width: 18px;
+      left: 4px;
+      bottom: 4px;
+      background-color: white;
+      transition: .3s;
+      border-radius: 50%;
+    }
+
+    input:checked + .slider {
+      background: linear-gradient(135deg, #f59e0b, #d97706);
+    }
+
+    input:checked + .slider:before {
+      transform: translateX(22px);
+    }
+
+    /* Buttons */
+    .btn-primary {
+      width: 100%;
+      padding: 14px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, #f59e0b, #ea580c);
+      color: #000000;
+      font-weight: 800;
+      font-size: 15px;
+      letter-spacing: 0.5px;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 25px rgba(245, 158, 11, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      transition: all 0.2s;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 30px rgba(245, 158, 11, 0.6);
+    }
+
+    .btn-secondary {
+      width: 100%;
+      padding: 13px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: #ffffff;
+      font-weight: 700;
+      font-size: 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+      margin-top: 10px;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.3);
+    }
+
+    /* Preview Canvas Area */
+    .preview-box {
+      width: 100%;
+      background: #000000;
+      border-radius: 18px;
+      overflow: hidden;
+      position: relative;
+      aspect-ratio: 9/16;
+      max-height: 520px;
+      margin: 0 auto 16px auto;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.8);
+    }
+
+    .preview-media {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .caption-box {
+      background: rgba(0, 0, 0, 0.5);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 12px;
+      padding: 14px;
+      font-size: 13px;
+      color: #e2e8f0;
+      line-height: 1.6;
+      max-height: 150px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      font-family: 'Noto Serif Devanagari', serif;
+    }
+
+    /* Logs & History */
+    .log-item {
+      padding: 10px 14px;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.02);
+      border-left: 3px solid var(--accent-gold);
+      margin-bottom: 8px;
+      font-size: 12px;
+    }
+
+    .log-time {
+      color: var(--text-muted);
+      font-size: 10px;
+      margin-bottom: 2px;
+    }
+
+    /* Notification Toast */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      padding: 14px 22px;
+      border-radius: 12px;
+      background: rgba(16, 20, 30, 0.95);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+      color: #ffffff;
+      font-weight: 600;
+      font-size: 14px;
+      display: none;
+      z-index: 999;
+      animation: slideIn .3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Navbar -->
+  <header class="navbar">
+    <div class="brand">
+      <div class="brand-logo">✦</div>
+      <div class="brand-text">
+        <h1>OPENIG AI STUDIO</h1>
+        <p>AUTONOMOUS CLOUD CONTROL PANEL</p>
+      </div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px;">
+      <div class="status-badge" id="accountBadge">
+        <span class="pulse-dot"></span>
+        <span id="targetUsername">@shivamkumar12323229</span>
+      </div>
+      <div class="status-badge" style="background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); color: #fbbf24;">
+        <span id="liveTimeIST">--:--:-- IST</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Container -->
+  <main class="container">
+    
+    <!-- Left Column: Controls & Studio Settings -->
+    <div>
+      
+      <!-- 1. Schedule & Auto-Post Hours -->
+      <section class="card">
+        <h2 class="card-title">⏰ Daily Schedule & Fix Timings (IST)</h2>
+        <p style="font-size: 12px; color: var(--text-muted); margin-bottom: 14px;">
+          Select exact peak hours when your cloud bot should autonomously generate and publish posts:
+        </p>
+        <div class="option-pills" id="schedulePills">
+          <button class="pill-btn active" data-hour="9">🌅 09:00 AM (Morning)</button>
+          <button class="pill-btn active" data-hour="14">☀️ 02:00 PM (Afternoon)</button>
+          <button class="pill-btn active" data-hour="21">🌙 09:00 PM (Prime Viral)</button>
+          <button class="pill-btn" data-hour="11">☕ 11:00 AM</button>
+          <button class="pill-btn" data-hour="18">🌇 06:00 PM</button>
+          <button class="pill-btn" data-hour="23">🌌 11:00 PM</button>
+        </div>
+        <button class="btn-secondary" style="margin-top: 14px;" onclick="saveSchedule()">💾 Save Schedule to Cloud</button>
+      </section>
+
+      <!-- 2. Content Studio Configurator -->
+      <section class="card">
+        <h2 class="card-title">🎨 AI Content Studio & Theme Selector</h2>
+        
+        <!-- Category Selection -->
+        <div class="form-group">
+          <label class="form-label">📌 Post Topic / Theme</label>
+          <div class="option-pills" id="categoryPills">
+            <button class="pill-btn active" data-cat="gandhi_jayanti">🕊️ 2 Oct Gandhi Jayanti</button>
+            <button class="pill-btn" data-cat="silent_hustle">⚔️ Dark Anime Stoic</button>
+            <button class="pill-btn" data-cat="life_reality">🥀 Life Reality</button>
+            <button class="pill-btn" data-cat="mindset_psychology">🧠 Mindset & Ego</button>
+            <button class="pill-btn" data-cat="heartbreak_healing">💔 Heartbreak & Healing</button>
+            <button class="pill-btn" data-cat="maa_baap_family">🥺 Maa Baap & Family</button>
+          </div>
+        </div>
+
+        <!-- Custom Prompt / Custom Words -->
+        <div class="form-group">
+          <label class="form-label">✍️ Custom Topic or Custom Words (Optional)</label>
+          <input type="text" id="customTopicInput" class="input-text" placeholder="e.g. Apne dam par pehchan banao, or type custom quote..." />
+        </div>
+
+        <!-- Language Selector -->
+        <div class="form-group">
+          <label class="form-label">🌐 Language (भाषा)</label>
+          <div class="option-pills" id="langPills">
+            <button class="pill-btn active" data-lang="hindi">🇮🇳 हिंदी (Hindi - Short & Punchy)</button>
+            <button class="pill-btn" data-lang="hinglish">🔤 Hinglish (Roman)</button>
+            <button class="pill-btn" data-lang="english">🌐 English</button>
+          </div>
+        </div>
+
+        <!-- Visual Background Style -->
+        <div class="form-group">
+          <label class="form-label">🎌 Visual Background Style</label>
+          <div class="option-pills" id="visualPills">
+            <button class="pill-btn active" data-style="anime">🎌 Anime Aesthetic (4K Berserk/Shinkai)</button>
+            <button class="pill-btn" data-style="scribble">✍️ Scribble Sketch Art (Viral Pencil)</button>
+            <button class="pill-btn" data-style="noir">🖤 Minimalist Obsidian Noir</button>
+          </div>
+        </div>
+
+        <!-- Audio Music Track Selector -->
+        <div class="form-group">
+          <label class="form-label">🎵 Soundtrack / Background Song</label>
+          <select id="musicSelect" class="select-box">
+            <option value="random">🎲 Auto Random (Different Song Every Post)</option>
+            <option value="track_anime_shinkai_piano">🎹 Shinkai Anime Piano & Twilight</option>
+            <option value="track_anime_lofi_rain">🌧️ Midnight Lofi Rain & Vinyl Warmth</option>
+            <option value="track_stoic_warrior_bass">⚡ Dark Stoic Warrior & Deep Bass</option>
+            <option value="track_life_reality_bansuri">🪈 Soulful Bansuri Flute & Chords</option>
+            <option value="track_time_trust_acoustic">🎸 Sad Acoustic Guitar & Strings</option>
+          </select>
+        </div>
+
+        <!-- Format & Content Options -->
+        <div class="form-group">
+          <label class="form-label">🎬 Content Format</label>
+          <div class="option-pills" id="formatPills">
+            <button class="pill-btn active" data-format="reel_motion">🎥 20-Second 4K Motion Reel (with Music)</button>
+            <button class="pill-btn" data-format="quote_card">🖼️ Static 4K Quote Card (Image)</button>
+          </div>
+        </div>
+
+        <!-- Story & Voice Toggles -->
+        <div class="toggle-row">
+          <div>
+            <div style="font-weight: 700; font-size: 14px;">📸 Post to Instagram Story</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Also upload 4K Card to 24-Hour Story</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="storyToggle" checked>
+            <span class="slider"></span>
+          </label>
+        </div>
+
+        <div class="toggle-row">
+          <div>
+            <div style="font-weight: 700; font-size: 14px;">🗣️ Human AI Voiceover</div>
+            <div style="font-size: 11px; color: var(--text-muted);">Synthesize Hindi Neural Voice (Madhur / Swara)</div>
+          </div>
+          <label class="toggle-switch">
+            <input type="checkbox" id="voiceToggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+
+      </section>
+
+    </div>
+
+    <!-- Right Column: Live Preview & Instant 1-Click Trigger -->
+    <div>
+      
+      <!-- Live Preview Area -->
+      <section class="card">
+        <h2 class="card-title">👁️ Live Studio Preview</h2>
+        
+        <div class="preview-box" id="previewContainer">
+          <div style="color: var(--text-muted); text-align: center; padding: 20px;">
+            <div style="font-size: 32px; margin-bottom: 8px;">🎬</div>
+            <div>Click <b>"Generate Live Preview"</b> below to render 4K video & audio!</div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">📝 Generated Caption & Hashtags</label>
+          <div class="caption-box" id="captionPreview">
+            Caption will appear here once generated...
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <button class="btn-secondary" id="previewBtn" onclick="generatePreview()">
+          ✨ Generate Live Preview
+        </button>
+
+        <button class="btn-primary" style="margin-top: 12px;" id="publishBtn" onclick="publishLiveNow()">
+          🚀 Instant 1-Click Publish to Instagram
+        </button>
+      </section>
+
+      <!-- Recent History & Cloud Activity -->
+      <section class="card">
+        <h2 class="card-title">📊 Published Posts & Cloud Activity</h2>
+        <div id="activityLogsList">
+          <div style="color: var(--text-muted); font-size: 12px;">Loading recent cloud logs...</div>
+        </div>
+      </section>
+
+    </div>
+
+  </main>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toast">Notification</div>
+
+  <script>
+    let activeScheduleHours = [9, 14, 21];
+    let selectedCategory = 'gandhi_jayanti';
+    let selectedLanguage = 'hindi';
+    let selectedVisualStyle = 'anime';
+    let selectedFormat = 'reel_motion';
+    let currentGeneratedQuote = null;
+
+    // Initialize State
+    async function initDashboard() {
+      try {
+        const res = await fetch('/api/v1/control/status');
+        const data = await res.json();
+        if (data.success) {
+          document.getElementById('liveTimeIST').innerText = data.timeIST;
+          document.getElementById('targetUsername').innerText = '@' + data.account.username;
+          
+          if (data.scheduleHours) {
+            activeScheduleHours = data.scheduleHours;
+            updateSchedulePillsUI();
+          }
+
+          renderActivityLogs(data.logs || [], data.posts || []);
+        }
+      } catch (err) {
+        console.warn('Status fetch error:', err);
+      }
+    }
+
+    // Schedule Pills Toggle
+    function updateSchedulePillsUI() {
+      document.querySelectorAll('#schedulePills .pill-btn').forEach(btn => {
+        const hour = parseInt(btn.dataset.hour);
+        if (activeScheduleHours.includes(hour)) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    document.querySelectorAll('#schedulePills .pill-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const hour = parseInt(btn.dataset.hour);
+        if (activeScheduleHours.includes(hour)) {
+          activeScheduleHours = activeScheduleHours.filter(h => h !== hour);
+        } else {
+          activeScheduleHours.push(hour);
+          activeScheduleHours.sort((a, b) => a - b);
+        }
+        updateSchedulePillsUI();
+      });
+    });
+
+    // Option Pills Listeners
+    function setupPillGroup(containerId, onSelect) {
+      document.querySelectorAll(`#${containerId} .pill-btn`).forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll(`#${containerId} .pill-btn`).forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+          onSelect(btn);
+        });
+      });
+    }
+
+    setupPillGroup('categoryPills', btn => selectedCategory = btn.dataset.cat);
+    setupPillGroup('langPills', btn => selectedLanguage = btn.dataset.lang);
+    setupPillGroup('visualPills', btn => selectedVisualStyle = btn.dataset.style);
+    setupPillGroup('formatPills', btn => selectedFormat = btn.dataset.format);
+
+    // Save Schedule
+    async function saveSchedule() {
+      showToast('Saving schedule to cloud...');
+      try {
+        const res = await fetch('/api/v1/control/schedule', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ hours: activeScheduleHours })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('✅ Schedule saved successfully! Bot will post at: ' + activeScheduleHours.map(h => `${h}:00 IST`).join(', '));
+        } else {
+          showToast('❌ Failed: ' + data.message);
+        }
+      } catch (err) {
+        showToast('❌ Network error saving schedule');
+      }
+    }
+
+    // Generate Preview
+    async function generatePreview() {
+      const previewBtn = document.getElementById('previewBtn');
+      previewBtn.disabled = true;
+      previewBtn.innerText = '⏳ Generating 4K Reel & Music...';
+      showToast('Rendering 4K visual & audio with AI Critic...');
+
+      const payload = {
+        category: selectedCategory,
+        customTopic: document.getElementById('customTopicInput').value.trim() || undefined,
+        language: selectedLanguage,
+        visualStyle: selectedVisualStyle,
+        musicTrackId: document.getElementById('musicSelect').value,
+        videoType: selectedFormat,
+        includeVoiceover: document.getElementById('voiceToggle').checked
+      };
+
+      try {
+        const res = await fetch('/api/v1/control/preview', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (data.success && data.quote) {
+          currentGeneratedQuote = data.quote;
+          renderPreview(data.quote);
+          showToast('🎉 4K Preview Ready! Rating: ' + data.quote.criticScore.overallRating + '/100');
+        } else {
+          showToast('❌ Preview generation failed');
+        }
+      } catch (err) {
+        showToast('❌ Generation error: ' + err.message);
+      } finally {
+        previewBtn.disabled = false;
+        previewBtn.innerText = '✨ Generate Live Preview';
+      }
+    }
+
+    // Render Preview Box
+    function renderPreview(quote) {
+      const container = document.getElementById('previewContainer');
+      const captionBox = document.getElementById('captionPreview');
+
+      if (quote.videoReelUrl) {
+        container.innerHTML = `
+          <video class="preview-media" controls autoplay loop playsinline>
+            <source src="${quote.videoReelUrl}" type="video/mp4">
+          </video>
+        `;
+      } else if (quote.cardImageUrl) {
+        container.innerHTML = `
+          <img class="preview-media" src="${quote.cardImageUrl}" alt="Quote Card" />
+        `;
+      }
+
+      captionBox.innerText = quote.caption;
+    }
+
+    // Publish Live Now
+    async function publishLiveNow() {
+      const publishBtn = document.getElementById('publishBtn');
+      publishBtn.disabled = true;
+      publishBtn.innerText = '🚀 Publishing Reel & Story Live to Instagram...';
+      showToast('Uploading to @shivamkumar12323229 (Reel + Story)...');
+
+      const payload = {
+        category: selectedCategory,
+        customTopic: document.getElementById('customTopicInput').value.trim() || undefined,
+        language: selectedLanguage,
+        visualStyle: selectedVisualStyle,
+        musicTrackId: document.getElementById('musicSelect').value,
+        videoType: selectedFormat,
+        includeStory: document.getElementById('storyToggle').checked,
+        includeVoiceover: document.getElementById('voiceToggle').checked
+      };
+
+      try {
+        const res = await fetch('/api/v1/control/publish', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+
+        if (data.success) {
+          showToast('🎉 POST & STORY LIVE ON INSTAGRAM!');
+          if (data.quote) renderPreview(data.quote);
+          setTimeout(initDashboard, 2000);
+        } else {
+          showToast('❌ Upload failed: ' + data.message);
+        }
+      } catch (err) {
+        showToast('❌ Publish error: ' + err.message);
+      } finally {
+        publishBtn.disabled = false;
+        publishBtn.innerText = '🚀 Instant 1-Click Publish to Instagram';
+      }
+    }
+
+    // Activity Logs Renderer
+    function renderActivityLogs(logs, posts) {
+      const container = document.getElementById('activityLogsList');
+      if (logs.length === 0 && posts.length === 0) {
+        container.innerHTML = '<div style="color: var(--text-muted); font-size: 12px;">No activity yet.</div>';
+        return;
+      }
+
+      let html = '';
+      logs.slice(0, 5).forEach(l => {
+        const time = new Date(l.timestamp).toLocaleTimeString();
+        html += `
+          <div class="log-item">
+            <div class="log-time">${time} — ${l.type.toUpperCase()}</div>
+            <div style="font-weight: 600;">${l.summary}</div>
+          </div>
+        `;
+      });
+
+      container.innerHTML = html;
+    }
+
+    // Toast Function
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.innerText = msg;
+      t.style.display = 'block';
+      setTimeout(() => { t.style.display = 'none'; }, 4000);
+    }
+
+    // Run on boot & update live clock every second
+    initDashboard();
+    setInterval(() => {
+      const now = new Date();
+      const ist = new Date(now.getTime() + (5.5 * 60 * 60 * 1000));
+      const h = String(ist.getUTCHours()).padStart(2, '0');
+      const m = String(ist.getUTCMinutes()).padStart(2, '0');
+      const s = String(ist.getUTCSeconds()).padStart(2, '0');
+      document.getElementById('liveTimeIST').innerText = `${h}:${m}:${s} IST`;
+    }, 1000);
+  </script>
+</body>
+</html>

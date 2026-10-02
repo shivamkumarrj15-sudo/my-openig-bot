@@ -138,6 +138,15 @@ export class AudioEngine {
   }
 
   /**
+   * Get Audio Track by Specific ID
+   */
+  public getAudioById(trackId: string): ITrendingAudioTrack {
+    const library = this.getTrendingAudioLibrary();
+    const match = library.find(t => t.id === trackId);
+    return match || this.getAudioForCategory('anime_aesthetic');
+  }
+
+  /**
    * Get Best Trending Audio for a Specific Quote Category (Randomized for Variety)
    */
   public getAudioForCategory(category: string): ITrendingAudioTrack {

@@ -35,6 +35,12 @@ router.get('/health', SystemController.getHealth);
 router.get('/metrics', requireAuth(['admin', 'operator', 'read_only']), SystemController.getMetrics);
 router.get('/audit-logs', requireAuth(['admin', 'operator', 'read_only']), SystemController.getAuditLogs);
 
+// --- AI CONTROL STUDIO (Public & Protected Web Interface) ---
+router.get('/control/status', AIController.getControlStatus);
+router.post('/control/schedule', AIController.updateSchedule);
+router.post('/control/preview', AIController.generateStudioPreview);
+router.post('/control/publish', AIController.publishStudioPost);
+
 // --- AI AUTO-PILOT (Autonomous 24/7 AI Engine) ---
 router.get('/ai/config', requireAuth(['admin', 'operator', 'read_only']), AIController.getConfig);
 router.post('/ai/config', requireAuth(['admin', 'operator']), AIController.updateConfig);

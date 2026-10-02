@@ -39,7 +39,7 @@ RUN npx tsc
 ENV NODE_ENV=production
 
 # Create data directories if not existing
-RUN mkdir -p data/media data/sessions data/audio
+RUN mkdir -p data/media data/sessions data/audio data/anime
 
 # Expose port
 EXPOSE 3000
