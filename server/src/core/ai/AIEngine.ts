@@ -718,9 +718,10 @@ Comment "LINK" or "INFO" below and I'll send the full guide directly to your DMs
             background: #000000;
             display: flex;
             flex-direction: column;
-            justify-content: space-between;
+            justify-content: center;
             align-items: center;
-            padding: 85px 50px 75px 50px;
+            padding: 85px 50px;
+            gap: 45px;
             font-family: 'Noto Serif Devanagari', 'Rozha One', serif;
           }
 
@@ -745,10 +746,10 @@ Comment "LINK" or "INFO" below and I'll send the full guide directly to your DMs
             width: 100%;
             height: 100%;
             background: linear-gradient(180deg, 
-              rgba(0,0,0,0.65) 0%, 
+              rgba(0,0,0,0.55) 0%, 
               rgba(0,0,0,0.2) 30%, 
               rgba(0,0,0,0.3) 55%, 
-              rgba(0,0,0,0.88) 80%, 
+              rgba(0,0,0,0.75) 80%, 
               #030303 100%);
             z-index: 2;
           }
@@ -756,7 +757,9 @@ Comment "LINK" or "INFO" below and I'll send the full guide directly to your DMs
           /* Ambient Glow */
           .ambient-glow {
             position: absolute;
-            bottom: 240px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             width: 800px;
             height: 400px;
             background: radial-gradient(circle, rgba(251, 191, 36, 0.18) 0%, transparent 70%);
@@ -798,8 +801,7 @@ Comment "LINK" or "INFO" below and I'll send the full guide directly to your DMs
             z-index: 10;
             width: 100%;
             max-width: 980px;
-            margin-bottom: 25px;
-            padding: 45px 40px;
+            padding: 50px 45px;
             background: rgba(10, 10, 15, 0.75);
             backdrop-filter: blur(25px);
             -webkit-backdrop-filter: blur(25px);
@@ -829,30 +831,6 @@ Comment "LINK" or "INFO" below and I'll send the full guide directly to your DMs
             color: #ffffff;
             text-shadow: 0 4px 25px rgba(0, 0, 0, 0.95);
           }
-
-          /* Author Footer Signature */
-          .footer-author {
-            position: relative;
-            z-index: 10;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 12px 34px;
-            border-radius: 999px;
-            background: rgba(0, 0, 0, 0.65);
-            backdrop-filter: blur(15px);
-            border: 1px solid rgba(255, 255, 255, 0.14);
-            color: rgba(255, 255, 255, 0.9);
-            font-family: 'Outfit', sans-serif;
-            font-size: 22px;
-            font-weight: 600;
-            letter-spacing: 2px;
-          }
-
-          .dot-sparkle {
-            color: #fbbf24;
-            font-size: 16px;
-          }
         </style>
       </head>
       <body>
@@ -869,10 +847,6 @@ Comment "LINK" or "INFO" below and I'll send the full guide directly to your DMs
           <div class="quote-text">
             ${quoteText.replace(/\n/g, '<br/>')}
           </div>
-        </div>
-
-        <div class="footer-author">
-          <span class="dot-sparkle">✦</span> ${authorHandle} <span class="dot-sparkle">✦</span>
         </div>
       </body>
       </html>
