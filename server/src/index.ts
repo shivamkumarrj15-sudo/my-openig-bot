@@ -34,6 +34,7 @@ if (fs.existsSync(publicDir)) {
 }
 app.use('/media', express.static(config.mediaDir));
 app.use('/data/anime', express.static(path.join(config.dataDir, 'anime')));
+app.use('/data/soul_sketch', express.static(path.join(config.dataDir, 'soul_sketch')));
 
 // Swagger Documentation
 if (config.enableSwagger) {

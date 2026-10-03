@@ -133,6 +133,24 @@ export class AudioEngine {
         mood: 'Two-Faced People & Reality of World (मतलबी दुनिया)',
         audioUrl: 'https://cdn.pixabay.com/download/audio/2022/03/09/audio_c8b9393fa1.mp3?filename=deep-sad-piano-10526.mp3',
         durationSeconds: 20
+      },
+      {
+        id: 'track_darwish_melancholy_piano',
+        category: 'darwish_philosophy',
+        title: 'Mahmoud Darwish Melancholic Piano & Night Sky',
+        artist: 'Poetic Nocturne',
+        mood: 'Deep Philosophical Poetry, Longing & Solitude (दरविश शायरी और सुकून)',
+        audioUrl: 'https://cdn.pixabay.com/download/audio/2022/11/06/audio_c93a027961.mp3?filename=piano-moment-124976.mp3',
+        durationSeconds: 20
+      },
+      {
+        id: 'track_sad_romantic_violin',
+        category: 'love_sad',
+        title: 'Painful Romantic Violin & Emotional Cello Strings',
+        artist: 'Siken & Kafka Melodies',
+        mood: 'Tragic Love, Devotion & Poignant Heartache (दर्द भरा प्यार और मोहब्बत)',
+        audioUrl: 'https://cdn.pixabay.com/download/audio/2022/03/15/audio_c8c8a73467.mp3?filename=emotional-piano-sad-10708.mp3',
+        durationSeconds: 20
       }
     ];
   }

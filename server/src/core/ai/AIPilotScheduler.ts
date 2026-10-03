@@ -85,10 +85,24 @@ export class AIPilotScheduler {
     const nowUtc = new Date();
     const istTime = new Date(nowUtc.getTime() + (5.5 * 60 * 60 * 1000));
     const currentIstHour = istTime.getUTCHours();
-    const scheduleHours = config.postingScheduleHours || [9, 14, 21]; // 9 AM, 2 PM, 9 PM IST Peak Windows
+    const scheduleHours = (config.postingScheduleHours && config.postingScheduleHours.length > 0) ? config.postingScheduleHours : [9, 14, 21]; // 9 AM, 2 PM, 9 PM IST Peak Windows
+    const todayDateStr = istTime.toISOString().split('T')[0];
 
-    if (!force && (!scheduleHours.includes(currentIstHour) || this.lastPostHour === currentIstHour)) {
-      return false;
+    // Find the latest scheduled slot that should have triggered today up to currentIstHour
+    const applicableSlot = scheduleHours.slice().sort((a, b) => b - a).find(h => currentIstHour >= h);
+    
+    // Check if we already published for this slot today
+    const posts = db.getPosts();
+    const publishedTodayForSlot = applicableSlot !== undefined && posts.some(p => {
+      if (p.status !== 'published' || !p.publishedAt) return false;
+      const pIst = new Date(new Date(p.publishedAt).getTime() + (5.5 * 60 * 60 * 1000));
+      return pIst.toISOString().split('T')[0] === todayDateStr && Math.abs(pIst.getUTCHours() - applicableSlot) <= 1;
+    });
+
+    if (!force) {
+      if (applicableSlot === undefined || publishedTodayForSlot || this.lastPostHour === applicableSlot) {
+        return false;
+      }
     }
 
     const safety = safetyQueue.canExecute(sessionId, 'post');

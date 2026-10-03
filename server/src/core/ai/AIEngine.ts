@@ -891,6 +891,202 @@ Comment "LINK" or "INFO" below and I'll send the full guide directly to your DMs
   }
 
   /**
+   * Render High-Impact Vintage Parchment Editorial Art Card (Soul Sketch & Arts by Alif Style)
+   * Perfectly matching @soul_sketch.art and 'arts by alif' conceptual editorial illustrations
+   */
+  public async renderSoulSketchEditorialCard(
+    sketchPath: string,
+    topTitle: string,
+    bottomPunchline: string,
+    authorHandle = '@shivamkumar12323229'
+  ): Promise<{ localPath: string; url: string }> {
+    const filename = `soul_sketch_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.png`;
+    const localPath = path.join(appConfig.mediaDir, filename);
+
+    try {
+      const sketchBase64 = fs.readFileSync(sketchPath).toString('base64');
+      const sketchDataUrl = `data:image/jpeg;base64,${sketchBase64}`;
+
+      const executable = this.detectBrowserExecutable();
+      const browser = await puppeteer.launch({
+        executablePath: executable,
+        headless: true,
+        args: ['--no-sandbox', '--disable-setuid-sandbox', '--window-size=1080,1920']
+      });
+
+      const page = await browser.newPage();
+      await page.setViewport({ width: 1080, height: 1920, deviceScaleFactor: 1 });
+
+      // Highlight keywords in punchline
+      const formattedPunchline = bottomPunchline
+        .replace(/(time|वक़्त|समय)/gi, '<span class="highlight-red">$1</span>')
+        .replace(/(control|नियंत्रण|हक)/gi, '<span class="highlight-red">$1</span>')
+        .replace(/(limited|सीमित)/gi, '<span class="highlight-red">$1</span>')
+        .replace(/(different|अलग)/gi, '<span class="highlight-blue">$1</span>')
+        .replace(/(eyes|नज़रिया)/gi, '<span class="highlight-red">$1</span>')
+        .replace(/(tree|पेड़)/gi, '<span class="highlight-green">$1</span>')
+        .replace(/\n/g, '<br/>');
+
+      const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700;900&family=Outfit:wght@500;700;800&family=Kalam:wght@700&family=Caveat:wght@700&display=swap" rel="stylesheet">
+        <style>
+          * { margin: 0; padding: 0; box-sizing: border-box; }
+          body {
+            width: 1080px;
+            height: 1920px;
+            background: #ede3cb;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            padding: 90px 48px 70px 48px;
+            font-family: 'Outfit', sans-serif;
+            overflow: hidden;
+            position: relative;
+          }
+
+          /* Vintage Parchment Texture & Vignette Overlay */
+          .parchment-vignette {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(circle at center, rgba(255,255,255,0.08) 0%, rgba(120, 85, 45, 0.28) 100%);
+            box-shadow: inset 0 0 120px rgba(80, 50, 20, 0.45);
+            pointer-events: none;
+            z-index: 2;
+          }
+
+          /* Top Header Box (Arts by Alif / Soul Sketch Style) */
+          .header-box {
+            z-index: 10;
+            width: 100%;
+            max-width: 980px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 20px;
+            padding-left: 20px;
+          }
+
+          .accent-bar {
+            width: 14px;
+            height: 64px;
+            background: #c83226;
+            border-radius: 4px;
+          }
+
+          .top-title {
+            font-size: 58px;
+            font-weight: 800;
+            color: #2b221a;
+            letter-spacing: -0.5px;
+            line-height: 1.1;
+          }
+
+          /* Center Illustration Frame */
+          .art-container {
+            z-index: 10;
+            width: 980px;
+            height: 1350px;
+            border-radius: 20px;
+            overflow: hidden;
+            position: relative;
+            background: #f7f1e1;
+            box-shadow: 0 15px 45px rgba(60, 40, 20, 0.22), 0 0 0 1px rgba(120, 90, 50, 0.2);
+          }
+
+          .art-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            object-position: center;
+            display: block;
+          }
+
+          /* Bottom Punchline Box */
+          .bottom-box {
+            z-index: 10;
+            width: 100%;
+            max-width: 980px;
+            text-align: center;
+            padding: 0 20px;
+          }
+
+          .punchline-text {
+            font-size: 50px;
+            font-weight: 700;
+            color: #1f1813;
+            line-height: 1.35;
+            letter-spacing: 0.2px;
+          }
+
+          .highlight-red {
+            color: #c83226;
+            font-weight: 800;
+          }
+
+          .highlight-green {
+            color: #2a7e43;
+            font-weight: 800;
+          }
+
+          .highlight-blue {
+            color: #205fb0;
+            font-weight: 800;
+          }
+
+          /* Watermark Signature */
+          .footer-author {
+            margin-top: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 20px;
+            font-size: 24px;
+            font-weight: 600;
+            color: #7d6b5c;
+            letter-spacing: 1.5px;
+          }
+        </style>
+      </head>
+      <body>
+        <div class="parchment-vignette"></div>
+
+        <div class="header-box">
+          <div class="accent-bar"></div>
+          <div class="top-title">${topTitle}</div>
+        </div>
+
+        <div class="art-container">
+          <img class="art-img" src="${sketchDataUrl}" />
+        </div>
+
+        <div class="bottom-box">
+          <div class="punchline-text">${formattedPunchline}</div>
+          <div class="footer-author">arts by ${authorHandle.replace('@', '')}</div>
+        </div>
+      </body>
+      </html>
+      `;
+
+      await page.setContent(html, { waitUntil: 'load' });
+      await new Promise(r => setTimeout(r, 1200));
+      await page.screenshot({ path: localPath, type: 'png', omitBackground: false });
+      await browser.close();
+
+      return { localPath, url: `/media/${filename}` };
+    } catch (err: any) {
+      console.warn(`[AIEngine] renderSoulSketchEditorialCard fallback: ${err.message}`);
+      return await this.renderQuoteCardImage(bottomPunchline, authorHandle, topTitle, 'S+ Ultra-Masterpiece', 99, '9:16');
+    }
+  }
+
+  /**
    * Autonomous Emotional Quotes Post Generator with AI Critic Rating
    */
   public async generateEmotionalQuote(
@@ -1045,7 +1241,13 @@ Comment "LINK" or "INFO" below and I'll send the full guide directly to your DMs
       console.warn(`[AIEngine] Audio fetch warning: ${e.message}`);
     }
 
-    // 3. Render 9:16 Fullscreen Vertical Anime/Cinema Card
+    // 3. Render 9:16 Fullscreen Vertical Editorial/Anime Card
+    const soulSketchDir = path.join(appConfig.dataDir, 'soul_sketch');
+    let soulSketchImages: string[] = [];
+    if (fs.existsSync(soulSketchDir)) {
+      soulSketchImages = fs.readdirSync(soulSketchDir).filter(f => f.endsWith('.jpg') || f.endsWith('.png')).map(f => path.join(soulSketchDir, f));
+    }
+
     const animeDir = path.join(appConfig.dataDir, 'anime');
     let animeImages: string[] = [];
     if (fs.existsSync(animeDir)) {
@@ -1053,7 +1255,11 @@ Comment "LINK" or "INFO" below and I'll send the full guide directly to your DMs
     }
 
     let cardImage: { localPath: string; url: string };
-    if (animeImages.length > 0) {
+    if (soulSketchImages.length > 0 && Math.random() > 0.4) {
+      const chosenSketch = soulSketchImages[Math.floor(Math.random() * soulSketchImages.length)];
+      console.log(`[AIEngine] 🎨 Using Soul Sketch Vintage Editorial Artwork: ${chosenSketch}`);
+      cardImage = await this.renderSoulSketchEditorialCard(chosenSketch, chosen.hook, chosen.quote, authorHandle);
+    } else if (animeImages.length > 0) {
       const chosenAnime = animeImages[Math.floor(Math.random() * animeImages.length)];
       console.log(`[AIEngine] 🎌 Using Aesthetic Anime Artwork Background: ${chosenAnime}`);
       cardImage = await this.renderAnimeQuoteCard(chosenAnime, chosen.quote, authorHandle, chosen.badge);
@@ -1136,7 +1342,7 @@ ${chosen.reflection}
     customTopic?: string;
     customQuoteText?: string;
     language?: 'hindi' | 'hinglish' | 'english';
-    visualStyle?: 'anime' | 'scribble' | 'noir' | 'scenic';
+    visualStyle?: 'anime' | 'scribble' | 'noir' | 'scenic' | 'soul_sketch' | 'editorial_sketch';
     musicTrackId?: string;
     videoType?: 'reel_motion' | 'ai_voiceover' | 'quote_card';
     authorHandle?: string;
@@ -1146,7 +1352,7 @@ ${chosen.reflection}
     const authorHandle = opts.authorHandle || '@shivamkumar12323229';
     const language = opts.language || 'hindi';
     const category = opts.category || 'silent_hustle';
-    const visualStyle = opts.visualStyle || 'anime';
+    const visualStyle = opts.visualStyle || 'soul_sketch';
     const videoType = opts.videoType || 'reel_motion';
 
     // 1. Language-Specific Curated Database
@@ -1254,6 +1460,52 @@ ${chosen.reflection}
         ]
       },
       english: {
+        darwish_philosophy: [
+          {
+            quote: "“You are my country,\nand everyone else is an exile.” 🕊️🥀\n\n— Mahmoud Darwish",
+            badge: "✦ MAHMOUD DARWISH ✦",
+            hook: "On Love, Longing & Solitude...",
+            reflection: "Love in its purest form is finding a home in a person, when the entire universe feels like an unfamiliar land."
+          },
+          {
+            quote: "“If you were not here,\nwho would fill the vast void\nleft by absence?” 🌧️🖤\n\n— Mahmoud Darwish",
+            badge: "✦ POETIC MELANCHOLY ✦",
+            hook: "The Weight of Absence...",
+            reflection: "Absence is not empty; it is filled with memories, unspoken words, and the haunting silence of what once was."
+          },
+          {
+            quote: "“And I tell myself:\na hope may come from yesterday,\nor a dream may fall from today...” 🌌✨\n\n— Mahmoud Darwish",
+            badge: "✦ HOPE IN THE DARK ✦",
+            hook: "A Whispered Hope...",
+            reflection: "Even when surrounded by ruins, the heart preserves an ember of hope waiting for the night to pass."
+          }
+        ],
+        love_sad: [
+          {
+            quote: "“Tell me about the dream where we pull the bodies out of the lake and dive back in... 🥀🌧️\n\nI love you. I am drowning. You are the water.”\n\n— Richard Siken",
+            badge: "✦ CRUSHING LOVE & DESIRE ✦",
+            hook: "The Ache of Passion...",
+            reflection: "Loving deeply means surrendering to the overwhelming tide, knowing that tenderness and heartbreak share the same heartbeat."
+          },
+          {
+            quote: "“I never loved you any more than I do, right this second.\nAnd I'll never love you any less than I do, right this second.” 💔✨\n\n— Richard Siken / Franz Kafka",
+            badge: "✦ ETERNAL DEVOTION ✦",
+            hook: "Devotion Beyond Time...",
+            reflection: "True love does not fluctuate with mood or seasons. It remains a quiet, unbreakable anchor within the soul."
+          },
+          {
+            quote: "“Immature love says: 'I love you because I need you.'\nMature love says: 'I need you because I love you.'” 🕊️🤍\n\n— Erich Fromm",
+            badge: "✦ PHILOSOPHY OF LOVE ✦",
+            hook: "The Art of Loving...",
+            reflection: "Love is not a passive sentiment you fall into; it is an active art, a deliberate choice of care, respect, and deep understanding."
+          },
+          {
+            quote: "“You don't love someone because they're perfect,\nyou love them in spite of the fact that they're not.” 🥀🖤\n\n— Franz Kafka",
+            badge: "✦ KAFKAESQUE SOUL ✦",
+            hook: "Loving the Broken Pieces...",
+            reflection: "To love someone is to see all their fractures and shadows, and still choose to hold their hand in the darkness."
+          }
+        ],
         silent_hustle: [
           {
             quote: "Silence isn't weakness,\nit's the calm before the storm... ⚔️🔥",
@@ -1311,13 +1563,33 @@ ${chosen.reflection}
 
     // 3. Render Card based on Visual Style
     let cardImage: { localPath: string; url: string };
+    const soulSketchDir = path.join(appConfig.dataDir, 'soul_sketch');
+    let soulSketchImages: string[] = [];
+    if (fs.existsSync(soulSketchDir)) {
+      soulSketchImages = fs.readdirSync(soulSketchDir).filter(f => f.endsWith('.jpg') || f.endsWith('.png')).map(f => path.join(soulSketchDir, f));
+    }
+
     const animeDir = path.join(appConfig.dataDir, 'anime');
     let animeImages: string[] = [];
     if (fs.existsSync(animeDir)) {
       animeImages = fs.readdirSync(animeDir).filter(f => f.endsWith('.jpg') || f.endsWith('.png')).map(f => path.join(animeDir, f));
     }
 
-    if (visualStyle === 'anime' && animeImages.length > 0) {
+    if ((visualStyle === 'soul_sketch' || visualStyle === 'editorial_sketch' || visualStyle === 'scenic') && soulSketchImages.length > 0) {
+      let chosenSketch = soulSketchImages[Math.floor(Math.random() * soulSketchImages.length)];
+      // If user selected specific topic keywords, match relevant sketch
+      if (hook.toLowerCase().includes('tree') || hook.toLowerCase().includes('perspective') || quoteText.toLowerCase().includes('tree')) {
+        const treeSketch = soulSketchImages.find(f => f.includes('same_tree'));
+        if (treeSketch) chosenSketch = treeSketch;
+      } else if (hook.toLowerCase().includes('time') || hook.toLowerCase().includes('limited') || quoteText.toLowerCase().includes('time')) {
+        const timeSketch = soulSketchImages.find(f => f.includes('time_limited'));
+        if (timeSketch) chosenSketch = timeSketch;
+      } else if (hook.toLowerCase().includes('candle') || hook.toLowerCase().includes('sacrifice') || quoteText.toLowerCase().includes('candle')) {
+        const candleSketch = soulSketchImages.find(f => f.includes('candle'));
+        if (candleSketch) chosenSketch = candleSketch;
+      }
+      cardImage = await this.renderSoulSketchEditorialCard(chosenSketch, hook, quoteText, authorHandle);
+    } else if (visualStyle === 'anime' && animeImages.length > 0) {
       // If Gandhi Jayanti, pick gandhi image if present
       let chosenAnime = animeImages[Math.floor(Math.random() * animeImages.length)];
       if (category === 'gandhi_jayanti') {
